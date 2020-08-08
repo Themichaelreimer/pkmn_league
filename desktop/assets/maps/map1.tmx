@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.4" tiledversion="1.4.1" orientation="orthogonal" renderorder="right-down" width="64" height="64" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="1">
+ <tileset firstgid="1" source="PokemonTileset1.tsx"/>
+ <layer id="1" name="Base" width="64" height="64">
+  <data encoding="base64" compression="zlib">
+   eJzt2E0KwjAQQOHpDQT/ziRY8UgquPBI6q3UAzggATctbZM0k+QtHoa6mY8pCmlEpCEimqmTdtYuBmZJ0V17aE8Ds+DHjx8/fvz48ePHjx8/fvz48ePHH8u/k989YKhyuU90/tDl8j45/0J7B+xjwDbG77sv507tSeXPNfz48ePHn34W/Pjx48ePHz9+/PP5h9z/5XKnN8Vf0p3emF5S3p1e6S21lbbWNgPO/8+2Bub3ba+12mHC59HA/L5dPfw3A/Ozf/bP/tl/rP23Pd/XsP+uc0377/Kz//Tzs/+4+6/995///zr37859zy3v/wtAxfiQ
+  </data>
+ </layer>
+ <layer id="2" name="Buildings" width="64" height="64">
+  <data encoding="base64" compression="zlib">
+   eJzt2sdTE2EYx/ElyQGCCgSC9cTBilKsJw7S64zt5MFGx8bJg10p/wAHGx3rzRnsCvwLNjo2PDmDXYonvxlhiDsJ2exu9pVkfzOfScKb2TzPJrvvmyWSJD4lEZJUirII0ZWISRN9N6MlRPvvo+9+DIRo/9F2SYqBwy66EjGxiC5AYEK595lYvNz39pz5lISw2ftz9TBf+5NH3kdDmMenaX6NE/pvVlNc9ah9DxN9zHsJAdiHauOqxVs9en6G3bfl6zNkxP7xt+dA1iTfdiCOMXn2+vkaDQrPe+6ZeZ6vY9uIfueKvB+l77Xac9b/PjeIfj/MGJuPNkmqVmHUpt+2lG4/0Gnhs9+KNrSrOA7GLX9NYBJT+G35d1zNmFEZoOdBDGFY5XkgySpJyUhBKjZatY8ZFQf7PBZxcKrc/+XUXYFKVOGwVfuYUcmn5wIUokhl/63U3YZ2dOC6VfuYUamh51rUod5L/77WB4PUPYRhjOAN0uYYcyVtjjGj4vre8oyeu9CNHovn7zK+1gexnLfj4EQ8Fttmt+PvmBkzgYz8ENc6/7uyieN2M7ZgK7ZZtY8ZFSXzv69p4Qh1H8UxHEe1VfuYUdFj/r9B3TdxC7dxx6p9zKjoMf+/pe53eI8PGLVqHzMq8vm/U5qlNEuYt5ZiGZZjhU37mFGRz/9j0iyl2UHdO7ELu7HHpn3MTOAi+nrUQDhzDoYwHC64GAXR+1qwg/VvLOLgFPw/cyXrH3+uD26nn3RkIBNZyEYOcpGHfBSgEEWC+9fj+od7TtLPKZzGGZzFOZzHBVxEDWpRh3rB/eux/nFPJ/3cw308wEM8wmM8wVPXd050oRs9gvvXY/3jnjH6+Ywv+Ipv+I4f+IlfGMcEJjEluH8l1z/8yUq7JK3CaqzBWqxDItZjA5KQjBSkCv7NjHz9ozX76Gc/DuAgDqEYJShFGcpRgUpUBdlvhi7Rz2VcwVVcQyOa0IwWtKIN7egIsv6f088LvMQrvEYv+tCPAQxiCMMYCZL+707f2iMlKRILsBCLEIVoxMCBWMTBifhIoWXrlk/Tt+n0k4FMZCEbOchFXpD0amb+ptjDesPT39zTGKK/6/W1X8yYCfXMzPudGh//7/F2DpyZ98c0Pp5PCdX5wExgI+o3YGbMmDFjxowZsekN8bVllJ/Xg/8AvNgCTQ==
+  </data>
+ </layer>
+ <layer id="3" name="Trees1 and Water" width="64" height="64">
+  <data encoding="base64" compression="zlib">
+   eJzt1DlSwzAYxXHFSWCShuUAuQjLNVh6oOYS0BLogeuw1Cw1HITnTmMM9kfQJ3nm/2be2JpsUn6WlqMQrtUb9UpdGsYL9be0vX4yC+FUPYuucQ70mUP1SD0e2cdVZVvDo/qkPqsPxrF1bnVutd479T66xrEaNMfWNazyW9ZxnVet9019j65xrPNvjj39reM6m/MQttTt6Bqnnv9YnajTyj729LfOrU929L5ddU/dr+xjT3/r3Dzi6V9iPP1LDP74p/L/y3nunZT+Oc5za1L6DyEp/YcQ/PHHH3/88ccff/zxxx9//PHHH3/88ccff/zxxx9//PHHH3/88ccff/zx9/D/nIRwvkI/1MX0+/fin97/Qr3smEef96RILv9c621mKPs/Vdj/ef1/2gd9zvv/iId/KXu9Lbn9uzJW19W1RPfe+7+0Z6F0/5T29X0J53/OZ6J0/5T29T3nfx7/rv/kZebTEvZ/WzbmPrX6fwGwfG1K
+  </data>
+ </layer>
+ <layer id="4" name="Trees2" width="64" height="64">
+  <data encoding="base64" compression="zlib">
+   eJzt22kOgjAQhuGCeCqXa7jcwpu4nMrlFl7EIcaEkGqLMwWL75dMyDSILQ8RfqBzzu0L5w5SR6lTEe5XUmupTWP8tW2Pt/t3aR5zW+j7soxbU52zbC9SV6lbEe61c/Olq0Goj11Tiu8O9b50NQj1Kf21vS/1fCdSldS01PeW/r5zq5mbLzMZn0stpJalvrf0b39WO7c+ktI/h6T0zyH444+/jX/M/evXYuk/xP1LG0v/WSZrbsbaP7dY+ucYS3+r7Crn7pXd8T4F/9/z7zP4448//vjjjz/++OOPP/74448//vjjj/9zX/zxxx9//PHHH3/88ccff/zxx3/YdXwbjX/M/5VSpH4/TFPNd8s0/mO4/jX+Y7j+8ccf/zj/9u/9v/mP8fmni/8Yn3/wj/N/AFQVdgQ=
+  </data>
+ </layer>
+</map>
