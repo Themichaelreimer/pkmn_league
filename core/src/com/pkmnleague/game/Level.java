@@ -3,6 +3,8 @@ package com.pkmnleague.game;
 import java.util.ArrayList;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -14,36 +16,33 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 // TODO:
 // Pass level the list of pokemon being deployed to this level.
 public class Level {
-
-
 	
 	private Tile[][] mapData; // Contains the move cost of each tile, whether it is water, grass, or breakable "solid"
 	private MapObject[][] objects; // Object layer
 	private TiledMap tiledMap;
 	private TiledMapRenderer tiledMapRenderer;
 	private Cursor cursor;
+	private OrthographicCamera camera;
 	
 	private ArrayList<Pokemon> playerPokemon;
 	private ArrayList<Pokemon> enemyPokemon;
 	
 	private int width;
 	private int height;
-	private int cursorX, cursorY;
 	
 	private int turnNumber = 0;
 	
-	public Level(String path) {
+	public Level(String path,OrthographicCamera cam) {
 		// By convention, we will make the base layer define the playable bounds
 		
 		playerPokemon = new ArrayList<Pokemon>();
 		enemyPokemon = new ArrayList<Pokemon>();
 
-		cursorX = 15;
-		cursorY = 26;
-		cursor = new Cursor(cursorX,cursorY);
+		cursor = new Cursor(15,26);
 		
 		tiledMap = new TmxMapLoader().load(Gdx.files.internal(path).file().getAbsolutePath());
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+		camera = cam;
 		
 		TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get(0);
 		width = layer.getWidth();
@@ -116,9 +115,31 @@ public class Level {
 	}
 	
 	public void render(Batch batch) {
+		camera.update();
+		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
+		
 		for(int i=0;i<playerPokemon.size();i++)
 			playerPokemon.get(i).draw(batch,1);
 		cursor.draw(batch, 0.3f);
+	}
+	
+	public void keyDown(int keycode) {
+		if(keycode == Input.Keys.UP) {
+			if(cursor.Y() < this.height-1)
+				cursor.move(0,1);
+		}
+		if(keycode == Input.Keys.DOWN) {
+			if(cursor.Y() > 0)
+				cursor.move(0,-1);
+		}
+		if(keycode == Input.Keys.RIGHT) {
+			if(cursor.X() < this.width-1)
+				cursor.move(1, 0);
+		}
+		if(keycode == Input.Keys.LEFT) {
+			if(cursor.X() > 0)
+				cursor.move(-1,0);
+		}
 	}
 }
