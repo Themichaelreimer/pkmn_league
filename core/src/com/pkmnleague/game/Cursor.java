@@ -45,11 +45,27 @@ public class Cursor extends Actor {
 		return this.pos_y;
 	}
 	
+	public boolean hasSelectedObject() {
+		return selectedObject1 != null;
+	}
+	
+	public MapObject getSelectedObject() {
+		return selectedObject1;
+	}
+	
+	public void setSelectedObject(MapObject obj) {
+		selectedObject1 = obj;
+	}
+	
+	public void clearSelectedObject() {
+		selectedObject1 = null;
+	}
+	
 	@Override
 	public void draw(Batch batch, float alpha) {
 		Color pre = batch.getColor();
 		//batch.setColor(pre.r, pre.g, pre.b, alpha);
-		batch.draw(texture, 16f*pos_x, 16f*pos_y, 16f,16f);
+		batch.draw(texture, 16f*pos_x +8, 16f*pos_y, 16f,16f);
 		//batch.setColor(pre.r, pre.g, pre.b, 1f);
 	}
 }

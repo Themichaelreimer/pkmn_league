@@ -135,5 +135,9 @@ public class Pokemon extends MapObject{
 		return result;
 	}
 	
+	public String toString() {
+		return logWithPosition(name);
+	}
+	
 	
 }

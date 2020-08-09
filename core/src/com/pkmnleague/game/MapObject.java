@@ -31,9 +31,17 @@ public class MapObject extends Actor {
 		coords[1] = y;
 	}
 	
-	
 	@Override
 	public void draw(Batch batch, float alpha) {
 		batch.draw(texture, 16f*coords[0], 16f*coords[1],32,32);
+	}
+	
+	public String logWithPosition(String str) {
+		return String.format("%s(%d,%d)",str, coords[0],coords[1]);
+
+	}
+	
+	public String toString() {
+		return logWithPosition("MapObject");
 	}
 }
