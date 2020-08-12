@@ -5,6 +5,7 @@ import com.badlogic.gdx.maps.MapProperties;
 public class Tile {
 	public int moveCost;
 	public boolean breakable, grass, water, solid;
+	public int x, y;
 	
 	public Tile(int moveCost, boolean breakable, boolean grass, boolean water, boolean solid) {
 		this.moveCost = moveCost;
@@ -14,11 +15,14 @@ public class Tile {
 		this.solid = solid;
 	}
 	
-	public Tile(MapProperties props) {
+	public Tile(MapProperties props, int x, int y) {
 		this.moveCost = Integer.parseInt((String)props.get("move_cost"));
 		this.breakable = (boolean) props.get("breakable");
 		this.grass = (boolean) props.get("grass");
 		this.water = (boolean) props.get("water");
 		this.solid = (boolean) props.get("solid");
+		this.x = x;
+		this.y = y;
 	}
+
 }

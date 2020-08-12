@@ -1,6 +1,8 @@
 package com.pkmnleague.game;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -54,7 +56,7 @@ public class Level {
 		
 		for(int y=0;y<height;y++) {
 			for(int x=0;x<width;x++) {
-				this.mapData[y][x] = new Tile(getTopTile(x,y).getTile().getProperties());
+				this.mapData[y][x] = new Tile(getTopTile(x,y).getTile().getProperties(),x,y);
 				this.objects[y][x] = null;
 			}
 		}
@@ -135,22 +137,25 @@ public class Level {
 				//Only a pokemon can be a slot 1 selected object
 				if(mapObj instanceof Pokemon) {
 					Pokemon mapPkmn = (Pokemon)mapObj;
-					cursor.setSelectedObject(mapPkmn);
+					cursor.setSelectedObject(mapPkmn, getMoveableTiles(x,y,mapPkmn.getMove()));
 					log("SELECTED "+ mapPkmn.toString());
 				}
-				
-				
 			}
 		}else {
 			if(cursor.hasSelectedObject()) {
 				// Nothing on map, but selected object
 				// therefore, move to spot if possible
-				MapObject cursMapObj = cursor.getSelectedObject();
-				int[] oldPos = cursMapObj.getPosition();
-				moveMapObj(cursMapObj,oldPos[0],oldPos[1],x,y);
-				cursor.clearSelectedObject();
 				
+				MapObject cursMapObj = cursor.getSelectedObject();
 				if(cursMapObj instanceof Pokemon) {
+					Tile targetTile = mapData[y][x];
+					
+					if(cursor.getMoveableTiles().contains(targetTile)) {
+						int[] oldPos = cursMapObj.getPosition();
+						moveMapObj(cursMapObj,oldPos[0],oldPos[1],x,y);
+						cursor.clearSelectedObject();
+					}
+					
 					Pokemon mapPkmn = (Pokemon)cursMapObj;
 					log("PLACED "+ mapPkmn.toString());
 				}
@@ -159,6 +164,73 @@ public class Level {
 				
 			}
 		}
+	}
+	
+	public ArrayList<Tile> getMoveableTiles(int x, int y, int pokemonMove){
+		ArrayList<Tile> list = new ArrayList<Tile>();
+		Queue<MapSearchStruct> tilesWithMove = new LinkedList<>();
+		tilesWithMove.add(new MapSearchStruct(mapData[y][x],pokemonMove));
+
+		while(tilesWithMove.size() >0) {
+			
+			//TODO: On adding a tile to the queue, check if it already exists, with a better or equal move score
+			
+			//Move the current tile into the accept list ENFORCING UNIQUENESS
+			MapSearchStruct tileStruct = tilesWithMove.remove();
+			if(list.contains(tileStruct.tile) == false) {
+				list.add(tileStruct.tile);	
+			}
+
+			// Properties of the tile "we're already on"
+			int tileX = tileStruct.tile.x;
+			int tileY = tileStruct.tile.y;
+			int remMove = tileStruct.moveRem;
+			
+			if(remMove == 0) {
+				continue;
+			}
+			
+			
+			if( pointInMap(tileX-1,tileY)) {
+				//If we have non-negative move, put this tile into queue.
+				Tile targetTile = mapData[tileY][tileX-1];
+				int remMoveAfter = remMove - targetTile.moveCost;
+				if(remMoveAfter >= 0) {
+					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
+				}
+			}
+			if( pointInMap(tileX+1,tileY)) {
+				//If we have non-negative move, put this tile into queue.
+				Tile targetTile = mapData[tileY][tileX+1];
+				int remMoveAfter = remMove - targetTile.moveCost;
+				if(remMoveAfter >= 0) {
+					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
+				}
+			}
+			if( pointInMap(tileX,tileY-1)) {
+				//If we have non-negative move, put this tile into queue.
+				Tile targetTile = mapData[tileY-1][tileX];
+				int remMoveAfter = remMove - targetTile.moveCost;
+				if(remMoveAfter >= 0) {
+					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
+				}
+			}
+			if( pointInMap(tileX,tileY+1)) {
+				//If we have non-negative move, put this tile into queue.
+				Tile targetTile = mapData[tileY+1][tileX];
+				int remMoveAfter = remMove - targetTile.moveCost;
+				if(remMoveAfter >= 0) {
+					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
+				}
+			}
+		}
+		
+		return list;
+	}
+
+	
+	public boolean pointInMap(int x, int y) {
+		return -1<x && x<width && -1<y && y<height;  
 	}
 	
 	public void moveMapObj(MapObject obj, int startX, int startY, int endX, int endY) {
@@ -204,4 +276,16 @@ public class Level {
 			mapClick();
 		}
 	}
+	
+	private class MapSearchStruct{
+		public Tile tile;
+		public int moveRem;
+		
+		MapSearchStruct(Tile t, int move){
+			this.tile = t;
+			this.moveRem = move;
+		}
+	}
+
 }
+
