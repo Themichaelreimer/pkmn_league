@@ -76,13 +76,13 @@ public class Cursor extends Actor {
 	@Override
 	public void draw(Batch batch, float alpha) {
 
-		batch.draw(texture, 16f*pos_x +8, 16f*pos_y, 16f,16f);
+		batch.draw(texture, 16f*pos_x, 16f*pos_y, 16f,16f);
 		//batch.setColor(pre.r, pre.g, pre.b, 1f);
 		batch.setColor(0f, 0.3f, 1f, 0.5f);
 		if(this.moveableTiles != null){
 			for(int i=0; i<this.moveableTiles.size();i++) {
 				Tile tile = moveableTiles.get(i);
-				batch.draw(mapArea,16f*tile.x+8,16f*tile.y,16f,16f);
+				batch.draw(mapArea,16f*tile.x,16f*tile.y,16f,16f);
 			}
 		}
 		batch.setColor(Color.WHITE);

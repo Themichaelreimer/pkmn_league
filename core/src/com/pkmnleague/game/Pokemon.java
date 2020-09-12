@@ -1,4 +1,5 @@
 package com.pkmnleague.game;
+import com.badlogic.gdx.graphics.g2d.Batch;
 
 import java.util.HashMap;
 
@@ -149,6 +150,13 @@ public class Pokemon extends MapObject{
 	
 	public int getMove() {
 		return move;
+	}
+	
+	@Override
+	public void draw(Batch batch, float alpha) {
+		// Only difference is a position offset because of an
+		// Eccentricity in the sprite image files
+		batch.draw(texture, 16f*this.coords[0]-8,16f*this.coords[1],32,32);
 	}
 	
 }

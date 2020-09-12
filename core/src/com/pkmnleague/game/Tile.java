@@ -4,9 +4,10 @@ import com.badlogic.gdx.maps.MapProperties;
 
 public class Tile {
 	public int moveCost;
-	public boolean breakable, grass, water, solid;
+	public boolean breakable, grass, water, solid, foreground;
 	public int x, y;
 	
+	// DEPRECATED??
 	public Tile(int moveCost, boolean breakable, boolean grass, boolean water, boolean solid) {
 		this.moveCost = moveCost;
 		this.breakable = breakable;
@@ -21,8 +22,9 @@ public class Tile {
 		this.grass = (boolean) props.get("grass");
 		this.water = (boolean) props.get("water");
 		this.solid = (boolean) props.get("solid");
+		this.foreground = (boolean) props.get("foreground");
 		this.x = x;
 		this.y = y;
 	}
-
+	
 }

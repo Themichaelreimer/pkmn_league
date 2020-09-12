@@ -56,7 +56,7 @@ public class Level {
 		
 		for(int y=0;y<height;y++) {
 			for(int x=0;x<width;x++) {
-				this.mapData[y][x] = new Tile(getTopTile(x,y).getTile().getProperties(),x,y);
+				this.mapData[y][x] = getTopTile(x,y);
 				this.objects[y][x] = null;
 			}
 		}
@@ -87,19 +87,25 @@ public class Level {
 	
 	/**
 	 * Returns the tile on the highest layer. This is the one least obscured when drawing, and the one we want to consult for properties.
+	 * Note that this ignores tiles labelled foreground, which are always aesthetic only
 	 * @param x - x coordinate on game board
 	 * @param y - y coordinate on game board
-	 * @return cell
+	 * @return tile
 	 */
-	public TiledMapTileLayer.Cell getTopTile(int x, int y) {
-		TiledMapTileLayer.Cell result = null;
+	public Tile getTopTile(int x, int y) {
+		Tile result = null;
 		MapLayers layers = tiledMap.getLayers();
 		for(int z=0;z<layers.getCount();z++) {
 			TiledMapTileLayer.Cell cell = ((TiledMapTileLayer) layers.get(z)).getCell(x,y);
 			if(cell != null) {
-				result = cell;
+				Tile tile = new Tile(cell.getTile().getProperties(),x,y);
+				if(!tile.foreground)
+					result = tile;
 			}
 		}
+		if(result != null)
+			assert(!result.foreground);
+		
 		return result;
 	}
 	
@@ -157,6 +163,9 @@ public class Level {
 					}
 					
 					Pokemon mapPkmn = (Pokemon)cursMapObj;
+					
+					log("TOP TILE: Water(" +targetTile.water+"); Foreground("+targetTile.foreground+")" );
+					
 					log("PLACED "+ mapPkmn.toString());
 				}
 			}else {

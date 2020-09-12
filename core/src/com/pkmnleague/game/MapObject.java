@@ -7,7 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 public class MapObject extends Actor {
 	//TODO: I don't think these actually have to be actors
 	
-	private int[] coords;
+	protected int[] coords;
 	Texture texture;
 	
 	public MapObject() {
