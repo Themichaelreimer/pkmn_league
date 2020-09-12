@@ -137,7 +137,7 @@ public class Level {
 				//Only a pokemon can be a slot 1 selected object
 				if(mapObj instanceof Pokemon) {
 					Pokemon mapPkmn = (Pokemon)mapObj;
-					cursor.setSelectedObject(mapPkmn, getMoveableTiles(x,y,mapPkmn.getMove()));
+					cursor.setSelectedObject(mapPkmn, getMoveableTiles(x,y,mapPkmn));
 					log("SELECTED "+ mapPkmn.toString());
 				}
 			}
@@ -166,10 +166,14 @@ public class Level {
 		}
 	}
 	
-	public ArrayList<Tile> getMoveableTiles(int x, int y, int pokemonMove){
+	//TODO: Make pokemon the param and not pokemon move. So I can get types, AND move
+	public ArrayList<Tile> getMoveableTiles(int x, int y, Pokemon pokemon){
 		ArrayList<Tile> list = new ArrayList<Tile>();
 		Queue<MapSearchStruct> tilesWithMove = new LinkedList<>();
+		int pokemonMove = pokemon.getMove();
 		tilesWithMove.add(new MapSearchStruct(mapData[y][x],pokemonMove));
+		
+		boolean canMoveOnWater = pokemon.hasType("water") || pokemon.hasType("flying");
 
 		while(tilesWithMove.size() >0) {
 			
@@ -185,6 +189,7 @@ public class Level {
 			int tileX = tileStruct.tile.x;
 			int tileY = tileStruct.tile.y;
 			int remMove = tileStruct.moveRem;
+			int remMoveAfter = 0;
 			
 			if(remMove == 0) {
 				continue;
@@ -194,32 +199,52 @@ public class Level {
 			if( pointInMap(tileX-1,tileY)) {
 				//If we have non-negative move, put this tile into queue.
 				Tile targetTile = mapData[tileY][tileX-1];
-				int remMoveAfter = remMove - targetTile.moveCost;
-				if(remMoveAfter >= 0) {
+				
+				if(targetTile.water && !canMoveOnWater)
+					remMoveAfter = -1;
+				else
+					remMoveAfter = remMove - targetTile.moveCost;
+				
+				if(remMoveAfter >= 0 && !targetTile.solid) {
 					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
 				}
 			}
 			if( pointInMap(tileX+1,tileY)) {
 				//If we have non-negative move, put this tile into queue.
 				Tile targetTile = mapData[tileY][tileX+1];
-				int remMoveAfter = remMove - targetTile.moveCost;
-				if(remMoveAfter >= 0) {
+				
+				if(targetTile.water && !canMoveOnWater)
+					remMoveAfter = -1;
+				else
+					remMoveAfter = remMove - targetTile.moveCost;
+				
+				if(remMoveAfter >= 0 && !targetTile.solid) {
 					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
 				}
 			}
 			if( pointInMap(tileX,tileY-1)) {
 				//If we have non-negative move, put this tile into queue.
 				Tile targetTile = mapData[tileY-1][tileX];
-				int remMoveAfter = remMove - targetTile.moveCost;
-				if(remMoveAfter >= 0) {
+				
+				if(targetTile.water && !canMoveOnWater)
+					remMoveAfter = -1;
+				else
+					remMoveAfter = remMove - targetTile.moveCost;
+				
+				if(remMoveAfter >= 0 && !targetTile.solid) {
 					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
 				}
 			}
 			if( pointInMap(tileX,tileY+1)) {
 				//If we have non-negative move, put this tile into queue.
 				Tile targetTile = mapData[tileY+1][tileX];
-				int remMoveAfter = remMove - targetTile.moveCost;
-				if(remMoveAfter >= 0) {
+				
+				if(targetTile.water && !canMoveOnWater)
+					remMoveAfter = -1;
+				else
+					remMoveAfter = remMove - targetTile.moveCost;
+				
+				if(remMoveAfter >= 0 && !targetTile.solid) {
 					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
 				}
 			}

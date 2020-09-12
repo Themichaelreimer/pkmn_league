@@ -29,6 +29,14 @@ public class Pokemon extends MapObject{
 		FAST
 	}
 	
+	public boolean hasType(String typeName) {
+		boolean result = typeName.equalsIgnoreCase(type1); //Yes I could make this one line. Ehhh.
+		if(type2 != null) {
+			return result || (typeName.equalsIgnoreCase(type2));	
+		}
+		return result;
+	}
+	
 	private static String getIconPath(String pokemonName) {
 		return String.format("assets/sprites/pokemon/icon/%s.png",pokemonName);
 	}
