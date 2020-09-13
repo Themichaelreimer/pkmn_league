@@ -30,12 +30,31 @@ public class Level {
 	private ArrayList<Pokemon> playerPokemon;
 	private ArrayList<Pokemon> enemyPokemon;
 	
+	// Map dimensions in tiles
 	private int width;
 	private int height;
+		
+	// Cursor position in screen space tiles
+	// The cursor position in world space is in the cursor object
+	private int camPosX, camPosY = 0;
+	private int cursLocalX, cursLocalY = 0;
+	
+	private final int maxCursCamDist = 7;
 	
 	private int turnNumber = 0;
 	
-	public Level(String path,OrthographicCamera cam) {
+	/**
+	 * Calculates the width and height of the viewport in tiles instead of pixels.
+	 * @return [width,height]
+	 */
+	private int[] getDimensionsInTiles() {
+		int[] res = new int[2];
+		res[0] = (int) (camera.viewportWidth / 16);
+		res[1] = (int) (camera.viewportHeight / 16);
+		return res;
+	}
+	
+	public Level(String path, OrthographicCamera cam) {
 		// By convention, we will make the base layer define the playable bounds
 		
 		playerPokemon = new ArrayList<Pokemon>();
@@ -103,8 +122,6 @@ public class Level {
 					result = tile;
 			}
 		}
-		if(result != null)
-			assert(!result.foreground);
 		
 		return result;
 	}
@@ -155,18 +172,17 @@ public class Level {
 				MapObject cursMapObj = cursor.getSelectedObject();
 				if(cursMapObj instanceof Pokemon) {
 					Tile targetTile = mapData[y][x];
+					Pokemon mapPkmn = (Pokemon)cursMapObj;
 					
 					if(cursor.getMoveableTiles().contains(targetTile)) {
 						int[] oldPos = cursMapObj.getPosition();
 						moveMapObj(cursMapObj,oldPos[0],oldPos[1],x,y);
 						cursor.clearSelectedObject();
+						log("PLACED "+ mapPkmn.toString());
 					}
 					
-					Pokemon mapPkmn = (Pokemon)cursMapObj;
+					//log("TOP TILE: Water(" +targetTile.water+"); Foreground("+targetTile.foreground+")" );
 					
-					log("TOP TILE: Water(" +targetTile.water+"); Foreground("+targetTile.foreground+")" );
-					
-					log("PLACED "+ mapPkmn.toString());
 				}
 			}else {
 				//Nothing on map and nothing selected. Do nothing.
@@ -291,24 +307,78 @@ public class Level {
 	// TODO: Make handler functions depending on map state
 	public void keyDown(int keycode) {
 		if(keycode == Input.Keys.UP) {
-			if(cursor.Y() < this.height-1)
-				cursor.move(0,1);
+			//if(cursor.Y() < this.height-1)
+				mapMove(0,1);
 		}
 		if(keycode == Input.Keys.DOWN) {
-			if(cursor.Y() > 0)
-				cursor.move(0,-1);
+			//if(cursor.Y() > 0)
+				mapMove(0,-1);
 		}
 		if(keycode == Input.Keys.RIGHT) {
-			if(cursor.X() < this.width-1)
-				cursor.move(1, 0);
+			//if(cursor.X() < this.width-1)
+				mapMove(1,0);
 		}
 		if(keycode == Input.Keys.LEFT) {
-			if(cursor.X() > 0)
-				cursor.move(-1,0);
+			//if(cursor.X() > 0)
+				mapMove(-1,0);
 		}
 		if(keycode == Input.Keys.X) {
 			mapClick();
 		}
+	}
+	
+	//Handles a cursor movement request on the map
+	public void mapMove(int dx, int dy) {
+		
+		if(!(0 <= cursor.X() +dx && cursor.X() +dx < this.width-1))
+			return;
+		if(!(0 <= cursor.Y() +dy && cursor.Y() +dy < this.height-1))
+			return;
+
+		
+		// "Global" cursor movement on the world map
+		cursor.move(dx, dy);
+		
+		if(dx>0) { //MOVE RIGHT
+			if(maxCursCamDist > cursLocalX) {
+				// Cursor is inside the "inner" box - Move cursor local space
+				cursLocalX += dx;
+			}else {
+				// Cursor is outside the "inner" box - Move camera instead
+				camera.translate(16*dx,0);
+			}
+		}else { // MOVE LEFT
+			
+			if(-maxCursCamDist < cursLocalX) {
+				// Cursor is inside the "inner" box - Move cursor local space
+				cursLocalX += dx; // Note dx is negative
+			}else {
+				// Cursor is outside the "inner" box - Move camera instead
+				camera.translate(16*dx,0);
+			}
+		}
+		
+		if(dy>0) { //MOVE UP
+			if(maxCursCamDist > cursLocalY) {
+				// Cursor is inside the "inner" box - Move cursor local space
+				cursLocalY += dy;
+			}else {
+				// Cursor is outside the "inner" box - Move camera instead
+				camera.translate(0,16*dy);
+			}
+		}else { // MOVE DOWN
+			
+			if(-maxCursCamDist < cursLocalY) {
+				// Cursor is inside the "inner" box - Move cursor local space
+				cursLocalY += dy; // Note dy is negative
+			}else {
+				// Cursor is outside the "inner" box - Move camera instead
+				camera.translate(0,16*dy);
+			}
+		}
+
+		
+		
 	}
 	
 	private class MapSearchStruct{
