@@ -15,6 +15,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Vector3;
 
 // TODO:
 // Pass level the list of pokemon being deployed to this level.
@@ -27,16 +28,20 @@ public class Level {
 	private Cursor cursor;
 	private OrthographicCamera camera;
 	
+	// Every frame the camera will move towards Target(x,y) according to another function
+	private Vector3 targetCameraPos;
+	
 	private ArrayList<Pokemon> playerPokemon;
 	private ArrayList<Pokemon> enemyPokemon;
 	
 	// Map dimensions in tiles
 	private int width;
 	private int height;
+	
+	private int screenWidthTiles, screenHeightTiles;
 		
 	// Cursor position in screen space tiles
 	// The cursor position in world space is in the cursor object
-	private int camPosX, camPosY = 0;
 	private int cursLocalX, cursLocalY = 0;
 	
 	private final int maxCursCamDist = 7;
@@ -65,6 +70,7 @@ public class Level {
 		tiledMap = new TmxMapLoader().load(Gdx.files.internal(path).file().getAbsolutePath());
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 		camera = cam;
+		targetCameraPos = new Vector3(); // Assuming this will be the 0 vector
 		
 		TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get(0);
 		width = layer.getWidth();
@@ -72,6 +78,33 @@ public class Level {
 		
 		this.mapData = new Tile[height][width];
 		this.objects = new MapObject[height][width];
+		int[] screenDim = getDimensionsInTiles();
+		this.screenWidthTiles = screenDim[0] / 2;
+		this.screenHeightTiles = screenDim[1] / 2;
+		
+		// Get camera position in tile space
+		
+		//Calculate optimal initial camera placement
+		int camX = cursor.X();
+		if(camX < screenWidthTiles) // 15 < 20
+			camX = screenWidthTiles;
+		else if(camX > width-screenWidthTiles) // 15 > 60-20
+			camX = width-screenWidthTiles;
+		
+		int camY = cursor.Y();
+		if(camY < screenHeightTiles)
+			camY = screenHeightTiles;
+		else if(camY > height-screenHeightTiles)
+			camY = height-screenHeightTiles;
+		
+		//Place camera
+		targetCameraPos.x = 16f*camX;
+		targetCameraPos.y = 16f*camY;
+		
+		//camera.translate(16f*camX,16f*camY);
+		
+		cursLocalX = cursor.X() - camX;
+		cursLocalY = cursor.Y() - camY;
 		
 		for(int y=0;y<height;y++) {
 			for(int x=0;x<width;x++) {
@@ -290,6 +323,7 @@ public class Level {
 	}
 	
 	public void render(Batch batch) {
+		moveCameraToTargetPos();
 		camera.update();
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
@@ -307,19 +341,15 @@ public class Level {
 	// TODO: Make handler functions depending on map state
 	public void keyDown(int keycode) {
 		if(keycode == Input.Keys.UP) {
-			//if(cursor.Y() < this.height-1)
 				mapMove(0,1);
 		}
 		if(keycode == Input.Keys.DOWN) {
-			//if(cursor.Y() > 0)
 				mapMove(0,-1);
 		}
 		if(keycode == Input.Keys.RIGHT) {
-			//if(cursor.X() < this.width-1)
 				mapMove(1,0);
 		}
 		if(keycode == Input.Keys.LEFT) {
-			//if(cursor.X() > 0)
 				mapMove(-1,0);
 		}
 		if(keycode == Input.Keys.X) {
@@ -330,13 +360,17 @@ public class Level {
 	//Handles a cursor movement request on the map
 	public void mapMove(int dx, int dy) {
 		
-		if(!(0 <= cursor.X() +dx && cursor.X() +dx < this.width-1))
+		// Cursor cant move outside of level
+		if(!(0 <= cursor.X() +dx && cursor.X() +dx < this.width))
 			return;
-		if(!(0 <= cursor.Y() +dy && cursor.Y() +dy < this.height-1))
+		if(!(0 <= cursor.Y() +dy && cursor.Y() +dy < this.height))
 			return;
-
+		
+		int camPosX = (int)(targetCameraPos.x/16);
+		int camPosY = (int)(targetCameraPos.y/16);
 		
 		// "Global" cursor movement on the world map
+		// Everything after cursor.move() is just visual
 		cursor.move(dx, dy);
 		
 		if(dx>0) { //MOVE RIGHT
@@ -345,7 +379,10 @@ public class Level {
 				cursLocalX += dx;
 			}else {
 				// Cursor is outside the "inner" box - Move camera instead
-				camera.translate(16*dx,0);
+				if (camPosX+screenWidthTiles < width)
+					moveCamera(16*dx,0);
+				else
+					cursLocalX += dx;
 			}
 		}else { // MOVE LEFT
 			
@@ -354,7 +391,10 @@ public class Level {
 				cursLocalX += dx; // Note dx is negative
 			}else {
 				// Cursor is outside the "inner" box - Move camera instead
-				camera.translate(16*dx,0);
+				if (camPosX-screenWidthTiles > 0)
+					moveCamera(16*dx,0);
+				else
+					cursLocalX += dx;
 			}
 		}
 		
@@ -364,7 +404,10 @@ public class Level {
 				cursLocalY += dy;
 			}else {
 				// Cursor is outside the "inner" box - Move camera instead
-				camera.translate(0,16*dy);
+				if (camPosY + screenHeightTiles < height )
+					moveCamera(0,16*dy);
+				else
+					cursLocalY += dy;
 			}
 		}else { // MOVE DOWN
 			
@@ -373,12 +416,55 @@ public class Level {
 				cursLocalY += dy; // Note dy is negative
 			}else {
 				// Cursor is outside the "inner" box - Move camera instead
-				camera.translate(0,16*dy);
+				System.out.printf("camPosY: %d, screenHeightInTiles: %d", camPosY,screenHeightTiles);
+				if (camPosY - screenHeightTiles > 0)
+					moveCamera(0,16*dy);
+				else
+					cursLocalY += dy; // Case where we are forced to move locally because of map edge
 			}
 		}
 
+		// Get camera position in tile space
+		Vector3 camPos = camera.position;
+		int camX = (int)(camPos.x/16);
+		int camY = (int)(camPos.y/16);
 		
+		System.out.printf("CamX: %d, CamY: %d\n", camX,camY);
+		System.out.printf("CursLocalX: %d, CursLocalY: %d\n",cursLocalX,cursLocalY);
 		
+	}
+	
+	/**
+	 * This function moves the target camera position that the camera will move towards every frame
+	 * 
+	 * @param dx target x in pixels. Multiply by 16 for tile space
+	 * @param dy target y in pixels. Multiply by 16 for tile space
+	 */
+	private void moveCamera(float dx, float dy) {
+		targetCameraPos.x += dx;
+		targetCameraPos.y += dy;
+	}
+	
+	/**
+	 * This method performs the animation of camera movement, and should only be called in render. 
+	 */
+	private void moveCameraToTargetPos() {
+		
+		float dist = this.targetCameraPos.dst(camera.position);
+		float maxDistPerFrame = dist/8;
+		if(maxDistPerFrame<1.5f)
+			maxDistPerFrame=1.5f;
+
+		Vector3 target = targetCameraPos.cpy();
+		
+		if(dist < maxDistPerFrame) {
+			camera.position.x = targetCameraPos.x;
+			camera.position.y = targetCameraPos.y;
+		}else {
+			Vector3 dv = target.sub(camera.position).nor().scl(maxDistPerFrame);
+			camera.translate(dv);
+		}
+
 	}
 	
 	private class MapSearchStruct{
