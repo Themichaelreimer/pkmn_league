@@ -156,7 +156,9 @@ public class Pokemon extends MapObject{
 	public void draw(Batch batch, float alpha) {
 		// Only difference is a position offset because of an
 		// Eccentricity in the sprite image files
-		batch.draw(texture, 16f*this.coords[0]-8,16f*this.coords[1],32,32);
+		moveToTargetPos();
+		//System.out.printf("%s@(%f,%f)\n",this.name,this.screenSpaceCoords.x-8,this.screenSpaceCoords.y);
+		batch.draw(texture, this.screenSpaceCoords.x-8,this.screenSpaceCoords.y,32,32);
 	}
 	
 }

@@ -37,16 +37,17 @@ public class Level {
 	// Map dimensions in tiles
 	private int width;
 	private int height;
-	
 	private int screenWidthTiles, screenHeightTiles;
 		
 	// Cursor position in screen space tiles
 	// The cursor position in world space is in the cursor object
 	private int cursLocalX, cursLocalY = 0;
-	
 	private final int maxCursCamDist = 7;
 	
 	private int turnNumber = 0;
+	
+	private boolean up,down,left,right = false;
+	private int upFrames, downFrames, leftFrames, rightFrames = 0;
 	
 	/**
 	 * Calculates the width and height of the viewport in tiles instead of pixels.
@@ -324,6 +325,8 @@ public class Level {
 	
 	public void render(Batch batch) {
 		moveCameraToTargetPos();
+		inputHandler();
+		
 		camera.update();
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
@@ -341,19 +344,71 @@ public class Level {
 	// TODO: Make handler functions depending on map state
 	public void keyDown(int keycode) {
 		if(keycode == Input.Keys.UP) {
-				mapMove(0,1);
+			up=true;
 		}
 		if(keycode == Input.Keys.DOWN) {
-				mapMove(0,-1);
+			down=true;
 		}
 		if(keycode == Input.Keys.RIGHT) {
-				mapMove(1,0);
+			right=true;
 		}
 		if(keycode == Input.Keys.LEFT) {
-				mapMove(-1,0);
+			left=true;
 		}
 		if(keycode == Input.Keys.X) {
 			mapClick();
+		}
+	}
+	
+	public void keyUp(int keycode) {
+		if(keycode == Input.Keys.UP) {
+			up=false;
+		}
+		if(keycode == Input.Keys.DOWN) {
+			down=false;
+		}
+		if(keycode == Input.Keys.RIGHT) {
+			right=false;
+		}
+		if(keycode == Input.Keys.LEFT) {
+			left=false;
+		}
+	}
+	
+	public void inputHandler() {
+		final int LAG_FRAMES = 15;
+		if(up) {
+			if(upFrames == 0 || upFrames == LAG_FRAMES)
+				mapMove(0,1);
+			if(upFrames < LAG_FRAMES)
+				upFrames++;
+		}
+		else {
+			upFrames = 0;
+		}
+		if(down) {
+			if(downFrames == 0 || downFrames == LAG_FRAMES)
+				mapMove(0,-1);
+			if(downFrames < LAG_FRAMES)
+				downFrames++;
+		}else {
+			downFrames = 0;
+		}
+		if(left) {
+			if(leftFrames == 0 || leftFrames == LAG_FRAMES)
+				mapMove(-1,0);
+			if(leftFrames < LAG_FRAMES)
+				leftFrames++;
+		}else {
+			leftFrames = 0;
+		}
+		if(right) {
+			if(rightFrames == 0 || rightFrames == LAG_FRAMES)
+				mapMove(1,0);
+			if(rightFrames < LAG_FRAMES)
+				rightFrames++;
+		}else {
+			rightFrames = 0;
 		}
 	}
 	
@@ -416,7 +471,6 @@ public class Level {
 				cursLocalY += dy; // Note dy is negative
 			}else {
 				// Cursor is outside the "inner" box - Move camera instead
-				System.out.printf("camPosY: %d, screenHeightInTiles: %d", camPosY,screenHeightTiles);
 				if (camPosY - screenHeightTiles > 0)
 					moveCamera(0,16*dy);
 				else
@@ -424,14 +478,6 @@ public class Level {
 			}
 		}
 
-		// Get camera position in tile space
-		Vector3 camPos = camera.position;
-		int camX = (int)(camPos.x/16);
-		int camY = (int)(camPos.y/16);
-		
-		System.out.printf("CamX: %d, CamY: %d\n", camX,camY);
-		System.out.printf("CursLocalX: %d, CursLocalY: %d\n",cursLocalX,cursLocalY);
-		
 	}
 	
 	/**

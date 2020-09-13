@@ -88,6 +88,7 @@ public class PkmnLeague extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public boolean keyUp(int keycode) {
 		
+		level.keyUp(keycode);
 		return false;
 	}
 	
