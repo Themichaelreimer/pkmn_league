@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
 public class Cursor extends Actor {
 	
 	private int pos_x,pos_y;
+	private Vector3 drawCoords;
 	private MapObject selectedObject1;
 	private MapObject selectedObject2;
 	private Texture texture;
@@ -21,6 +23,7 @@ public class Cursor extends Actor {
 		 selectedObject2 = null;
 		 pos_x = startX;
 		 pos_y = startY;
+		 drawCoords = new Vector3();
 		 texture = new Texture("assets/sprites/cursor.png");
 		 mapArea = new Texture("assets/sprites/area.png");
 		 moveableTiles = null;
@@ -73,10 +76,37 @@ public class Cursor extends Actor {
 		return moveableTiles;
 	}
 	
+	protected float[] getTargetCamPos() {
+		float[] pos = new float[2];
+		pos[0] = 16f*pos_x;
+		pos[1] = 16f*pos_y;
+		return pos;
+	}
+	
+	protected void moveToTargetPos() {
+		
+		float[] targetPos = getTargetCamPos();
+		Vector3 target = new Vector3(targetPos[0],targetPos[1],0);
+		
+		float dist = target.dst(drawCoords);
+		float maxDistPerFrame = dist/4;
+		if(maxDistPerFrame<4f)
+			maxDistPerFrame=4f;
+		
+		if(dist < maxDistPerFrame) {
+			drawCoords = target;
+		}else {
+			Vector3 dv = target.sub(drawCoords).nor().scl(maxDistPerFrame);
+			drawCoords.add(dv);
+		}
+
+	}
+	
 	@Override
 	public void draw(Batch batch, float alpha) {
 
-		batch.draw(texture, 16f*pos_x, 16f*pos_y, 16f,16f);
+		moveToTargetPos();
+		batch.draw(texture, drawCoords.x, drawCoords.y, 16f,16f);
 		//batch.setColor(pre.r, pre.g, pre.b, 1f);
 		batch.setColor(0f, 0.3f, 1f, 0.5f);
 		if(this.moveableTiles != null){

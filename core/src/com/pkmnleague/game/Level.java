@@ -332,12 +332,14 @@ public class Level {
 		tiledMapRenderer.render();
 		
 		// Draw player's pokemon on board  IN BLUE-----------------
-		//Color pre = batch.getColor();
-		//batch.setColor(0.7f, 0.7f, 1.0f, 1.0f);
+		//
+		// Colour team greyscale then blue using GLSL shader
+		//
 		for(int i=0;i<playerPokemon.size();i++)
 			playerPokemon.get(i).draw(batch,1);
-		//batch.setColor(pre.r, pre.g, pre.b, 1f);
 		//-------------------------------------------------
+		
+		//Draw enemy team in red
 		cursor.draw(batch, 0.3f);
 	}
 	
