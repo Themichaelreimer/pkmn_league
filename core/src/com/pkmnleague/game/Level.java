@@ -213,6 +213,8 @@ public class Level {
 						moveMapObj(cursMapObj,oldPos[0],oldPos[1],x,y);
 						cursor.clearSelectedObject();
 						log("PLACED "+ mapPkmn.toString());
+					}else {
+						cursor.cancel();
 					}
 					
 					//log("TOP TILE: Water(" +targetTile.water+"); Foreground("+targetTile.foreground+")" );
@@ -359,6 +361,9 @@ public class Level {
 		}
 		if(keycode == Input.Keys.X) {
 			mapClick();
+		}
+		if(keycode == Input.Keys.Z) {
+			cursor.cancel();
 		}
 	}
 	

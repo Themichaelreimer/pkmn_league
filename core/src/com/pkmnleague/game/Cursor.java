@@ -34,6 +34,13 @@ public class Cursor extends Actor {
 		this.pos_y = y;
 	}
 	
+	public void cancel() {
+		if(selectedObject1 != null)
+			selectedObject1 = null;
+		if(moveableTiles != null)
+			moveableTiles = null;
+	}
+	
 	public void move(int dx, int dy) {
 		this.pos_x += dx;
 		this.pos_y += dy;
