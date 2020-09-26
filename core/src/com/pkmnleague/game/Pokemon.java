@@ -18,6 +18,7 @@ public class Pokemon extends MapObject{
 	
 	//Derived values
 	private int level, exp;
+	private boolean moved;
 	
 	//The following is determined by the pokemon's name
 	Texture iconSprite, portraitSprite;
@@ -28,6 +29,14 @@ public class Pokemon extends MapObject{
 		SLOW,
 		MEDIUM,
 		FAST
+	}
+	
+	public boolean hasMoved() {
+		return moved;
+	}
+	
+	public void setMoved() {
+		moved = true;
 	}
 	
 	public boolean hasType(String typeName) {
@@ -88,6 +97,14 @@ public class Pokemon extends MapObject{
 			this.levelUpStatMod();
 		}
 
+	}
+	
+	public String getName() {
+		return this.name;
+	}
+	
+	public String getDescStr() {
+		return String.format("%d - %d/%d", this.level,this.hp,this.hp);
 	}
 	
 	/*

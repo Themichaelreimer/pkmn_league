@@ -16,6 +16,10 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 // TODO:
 // Pass level the list of pokemon being deployed to this level.
@@ -46,8 +50,16 @@ public class Level {
 	
 	private int turnNumber = 0;
 	
+	//Cursor movement vars
 	private boolean up,down,left,right = false;
 	private int upFrames, downFrames, leftFrames, rightFrames = 0;
+	
+	//UI Variables
+	private Container<Table> UIContainer;
+	private Skin pokemonPreviewSkin;
+	private Table pokemonPreview;
+	private Label pokemonNameLabel;
+	private Label pokemonDescLabel;
 	
 	/**
 	 * Calculates the width and height of the viewport in tiles instead of pixels.
@@ -76,6 +88,23 @@ public class Level {
 		TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get(0);
 		width = layer.getWidth();
 		height = layer.getHeight();
+		
+		UIContainer = new Container<Table>();
+		UIContainer.setFillParent(true);
+		
+		pokemonPreviewSkin = new Skin(Gdx.files.internal("uiskin.json"));
+		pokemonNameLabel = new Label("TEST",pokemonPreviewSkin);
+		pokemonDescLabel = new Label("TEST",pokemonPreviewSkin);
+		pokemonPreview = new Table(pokemonPreviewSkin);
+		pokemonPreview.top().right();
+		pokemonPreview.setFillParent(true);
+		pokemonPreview.setSize(400,200);
+		//pokemonPreview.setPosition(1f, 1f);
+		pokemonPreview.add(pokemonNameLabel);
+		pokemonPreview.row();
+		pokemonPreview.add(pokemonDescLabel);
+		
+		UIContainer.setActor(pokemonPreview);
 		
 		this.mapData = new Tile[height][width];
 		this.objects = new MapObject[height][width];
@@ -343,6 +372,7 @@ public class Level {
 		
 		//Draw enemy team in red
 		cursor.draw(batch, 0.3f);
+		UIContainer.draw(batch, 1f);
 	}
 	
 	// TODO: Make handler functions depending on map state
@@ -365,6 +395,7 @@ public class Level {
 		if(keycode == Input.Keys.Z) {
 			cursor.cancel();
 		}
+
 	}
 	
 	public void keyUp(int keycode) {
@@ -419,6 +450,22 @@ public class Level {
 		}
 	}
 	
+	public void updateUILabels(Cursor cursor) {
+		int[] pos = cursor.getPos();
+		MapObject obj = objects[pos[1]][pos[0]];
+		if(obj != null) {
+			if(obj instanceof Pokemon) {
+				Pokemon pkmn = (Pokemon)obj;
+				pokemonNameLabel.setText(pkmn.getName());
+				pokemonDescLabel.setText(pkmn.getDescStr());
+			}
+		}else {
+			pokemonNameLabel.setText("");
+			pokemonDescLabel.setText("");
+		}
+		
+	}
+	
 	//Handles a cursor movement request on the map
 	public void mapMove(int dx, int dy) {
 		
@@ -434,6 +481,7 @@ public class Level {
 		// "Global" cursor movement on the world map
 		// Everything after cursor.move() is just visual
 		cursor.move(dx, dy);
+		updateUILabels(cursor);
 		
 		if(dx>0) { //MOVE RIGHT
 			if(maxCursCamDist > cursLocalX) {
