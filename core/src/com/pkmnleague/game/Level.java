@@ -16,10 +16,12 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 // TODO:
 // Pass level the list of pokemon being deployed to this level.
@@ -61,6 +63,8 @@ public class Level {
 	private Label pokemonNameLabel;
 	private Label pokemonDescLabel;
 	
+	private Stage stage;
+	
 	/**
 	 * Calculates the width and height of the viewport in tiles instead of pixels.
 	 * @return [width,height]
@@ -75,6 +79,7 @@ public class Level {
 	public Level(String path, OrthographicCamera cam) {
 		// By convention, we will make the base layer define the playable bounds
 		
+		stage =  new Stage();
 		playerPokemon = new ArrayList<Pokemon>();
 		enemyPokemon = new ArrayList<Pokemon>();
 
@@ -89,8 +94,8 @@ public class Level {
 		width = layer.getWidth();
 		height = layer.getHeight();
 		
-		UIContainer = new Container<Table>();
-		UIContainer.setFillParent(true);
+		//UIContainer = new Container<Table>();
+		//UIContainer.setFillParent(true);
 		
 		pokemonPreviewSkin = new Skin(Gdx.files.internal("uiskin.json"));
 		pokemonNameLabel = new Label("TEST",pokemonPreviewSkin);
@@ -98,13 +103,16 @@ public class Level {
 		pokemonPreview = new Table(pokemonPreviewSkin);
 		pokemonPreview.top().right();
 		pokemonPreview.setFillParent(true);
-		pokemonPreview.setSize(400,200);
+		//pokemonPreview.setSize(400,200);
 		//pokemonPreview.setPosition(1f, 1f);
 		pokemonPreview.add(pokemonNameLabel);
 		pokemonPreview.row();
 		pokemonPreview.add(pokemonDescLabel);
+		//pokemonPreview.setDebug(true);
 		
-		UIContainer.setActor(pokemonPreview);
+		//UIContainer.setActor(pokemonPreview);
+		//stage.addActor(UIContainer);
+		stage.addActor(pokemonPreview);
 		
 		this.mapData = new Tile[height][width];
 		this.objects = new MapObject[height][width];
@@ -372,7 +380,7 @@ public class Level {
 		
 		//Draw enemy team in red
 		cursor.draw(batch, 0.3f);
-		UIContainer.draw(batch, 1f);
+		stage.draw();
 	}
 	
 	// TODO: Make handler functions depending on map state
@@ -460,7 +468,7 @@ public class Level {
 				pokemonDescLabel.setText(pkmn.getDescStr());
 			}
 		}else {
-			pokemonNameLabel.setText("");
+			pokemonNameLabel.setText("NONE");
 			pokemonDescLabel.setText("");
 		}
 		
@@ -482,6 +490,8 @@ public class Level {
 		// Everything after cursor.move() is just visual
 		cursor.move(dx, dy);
 		updateUILabels(cursor);
+		
+
 		
 		if(dx>0) { //MOVE RIGHT
 			if(maxCursCamDist > cursLocalX) {
@@ -532,6 +542,9 @@ public class Level {
 					cursLocalY += dy; // Case where we are forced to move locally because of map edge
 			}
 		}
+		
+		System.out.printf("Local(x,y) = (%d,%d)\n",cursLocalX,cursLocalY);
+		System.out.printf("World(x,y) = (%d,%d)\n", cursor.X(),cursor.Y());
 
 	}
 	

@@ -67,7 +67,7 @@ public class Pokemon extends MapObject{
 		}
 		
 		//Read data from """database""" """row"""
-		this.name = name;
+		this.name = name.substring(0,1).toUpperCase() + name.substring(1);
 		this.type1 = pokemonData.get("type1");
 		this.type2 = pokemonData.get("type2");
 		this.hpGrowth = Integer.parseInt(pokemonData.get("hp"));
@@ -104,7 +104,7 @@ public class Pokemon extends MapObject{
 	}
 	
 	public String getDescStr() {
-		return String.format("%d - %d/%d", this.level,this.hp,this.hp);
+		return String.format("Lv.%d - HP:%d/%d", this.level,this.hp,this.hp);
 	}
 	
 	/*
