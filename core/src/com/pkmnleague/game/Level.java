@@ -15,6 +15,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -76,6 +77,10 @@ public class Level {
 		return res;
 	}
 	
+	public Stage getStage() {
+		return this.stage;
+	}
+	
 	public Level(String path, OrthographicCamera cam) {
 		// By convention, we will make the base layer define the playable bounds
 		
@@ -94,25 +99,19 @@ public class Level {
 		width = layer.getWidth();
 		height = layer.getHeight();
 		
-		//UIContainer = new Container<Table>();
-		//UIContainer.setFillParent(true);
-		
 		pokemonPreviewSkin = new Skin(Gdx.files.internal("uiskin.json"));
 		pokemonNameLabel = new Label("TEST",pokemonPreviewSkin);
 		pokemonDescLabel = new Label("TEST",pokemonPreviewSkin);
 		pokemonPreview = new Table(pokemonPreviewSkin);
 		pokemonPreview.top().right();
 		pokemonPreview.setFillParent(true);
-		//pokemonPreview.setSize(400,200);
-		//pokemonPreview.setPosition(1f, 1f);
+
 		pokemonPreview.add(pokemonNameLabel);
 		pokemonPreview.row();
 		pokemonPreview.add(pokemonDescLabel);
-		//pokemonPreview.setDebug(true);
-		
-		//UIContainer.setActor(pokemonPreview);
-		//stage.addActor(UIContainer);
+
 		stage.addActor(pokemonPreview);
+		
 		
 		this.mapData = new Tile[height][width];
 		this.objects = new MapObject[height][width];
@@ -363,6 +362,7 @@ public class Level {
 	}
 	
 	public void render(Batch batch) {
+		
 		moveCameraToTargetPos();
 		inputHandler();
 		
@@ -380,7 +380,11 @@ public class Level {
 		
 		//Draw enemy team in red
 		cursor.draw(batch, 0.3f);
-		stage.draw();
+		
+		/**********************************************************************************************************************/
+		/*   THIS "WORKS" BUT SCREWS UP OTHER RENDERING. TRANSFORMATIONS? RENDERING ORDER? TOO SLEEPY TO TEST THESE NOW.      */
+		/**********************************************************************************************************************/
+		
 	}
 	
 	// TODO: Make handler functions depending on map state

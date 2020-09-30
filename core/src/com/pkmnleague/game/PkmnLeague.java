@@ -14,6 +14,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -23,6 +24,7 @@ public class PkmnLeague extends ApplicationAdapter implements InputProcessor {
 	SpriteBatch batch;
 	OrthographicCamera camera;
 	Level level;
+	Stage stageFrame;
 	
 	public enum GameState{
 		StartMenu,
@@ -59,6 +61,7 @@ public class PkmnLeague extends ApplicationAdapter implements InputProcessor {
 
 		//Load map
 		level = new Level("assets/maps/map1-2.tmx",camera);
+		stageFrame = level.getStage();
 
 		Dataset pokemondb = Dataset.getDataset();
 		Gdx.input.setInputProcessor(this);
@@ -75,6 +78,11 @@ public class PkmnLeague extends ApplicationAdapter implements InputProcessor {
 		batch.begin();
 		level.render(batch);
 		batch.end();
+		
+		stageFrame = level.getStage();
+		if(stageFrame != null) {
+			stageFrame.draw();
+		}
 	}
 	
 	// Deleted a public void dispose()
