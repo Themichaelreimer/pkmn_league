@@ -8,7 +8,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
@@ -19,9 +21,13 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 // TODO:
@@ -63,6 +69,7 @@ public class Level {
 	private Table pokemonPreview;
 	private Label pokemonNameLabel;
 	private Label pokemonDescLabel;
+	private Image pokemonPreviewIcon;
 	
 	private Stage stage;
 	
@@ -99,17 +106,35 @@ public class Level {
 		width = layer.getWidth();
 		height = layer.getHeight();
 		
+		//////////////////////////////////////////////////////////////////////////////////////////
+		//																						//
+		//    UI Setup																			//
+		//																						//
+		//////////////////////////////////////////////////////////////////////////////////////////
 		pokemonPreviewSkin = new Skin(Gdx.files.internal("uiskin.json"));
 		pokemonNameLabel = new Label("TEST",pokemonPreviewSkin);
 		pokemonDescLabel = new Label("TEST",pokemonPreviewSkin);
+		
 		pokemonPreview = new Table(pokemonPreviewSkin);
 		pokemonPreview.top().right();
 		pokemonPreview.setFillParent(true);
+		Texture previewBG = new Texture(Gdx.files.internal("assets/sprites/LoyaltyBattleUI/battleMessage.png"));
+		//pokemonPreview.setBackground(new TextureRegionDrawable(previewBG));
+		
+		Table previewContainer = new Table();
+		previewContainer.setBackground(new TextureRegionDrawable(previewBG));
+		
+		Table textPreviewComponent = new Table();
+		pokemonPreviewIcon = new Image();
 
-		pokemonPreview.add(pokemonNameLabel);
-		pokemonPreview.row();
-		pokemonPreview.add(pokemonDescLabel);
-
+		textPreviewComponent.add(pokemonNameLabel);
+		textPreviewComponent.row();
+		textPreviewComponent.add(pokemonDescLabel);
+		
+		previewContainer.add(pokemonPreviewIcon);
+		previewContainer.add(textPreviewComponent).pad(2.0f);
+		
+		pokemonPreview.add(previewContainer).pad(2.0f).prefSize(180f, 64f);
 		stage.addActor(pokemonPreview);
 		
 		
@@ -366,6 +391,12 @@ public class Level {
 		moveCameraToTargetPos();
 		inputHandler();
 		
+		if(objects[cursor.Y()][cursor.X()] == null) {
+			pokemonPreview.setVisible(false);
+		}else {
+			pokemonPreview.setVisible(true);
+		}
+		
 		camera.update();
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
@@ -462,18 +493,20 @@ public class Level {
 		}
 	}
 	
+	
 	public void updateUILabels(Cursor cursor) {
 		int[] pos = cursor.getPos();
 		MapObject obj = objects[pos[1]][pos[0]];
 		if(obj != null) {
 			if(obj instanceof Pokemon) {
 				Pokemon pkmn = (Pokemon)obj;
+				Sprite spr = new Sprite(pkmn.portraitSpriteDef);
+				spr.setSize(64.0f, 64.0f);
+				pokemonPreviewIcon.setDrawable(new SpriteDrawable(spr));
+				
 				pokemonNameLabel.setText(pkmn.getName());
 				pokemonDescLabel.setText(pkmn.getDescStr());
 			}
-		}else {
-			pokemonNameLabel.setText("NONE");
-			pokemonDescLabel.setText("");
 		}
 		
 	}
@@ -494,8 +527,6 @@ public class Level {
 		// Everything after cursor.move() is just visual
 		cursor.move(dx, dy);
 		updateUILabels(cursor);
-		
-
 		
 		if(dx>0) { //MOVE RIGHT
 			if(maxCursCamDist > cursLocalX) {
@@ -547,8 +578,18 @@ public class Level {
 			}
 		}
 		
-		System.out.printf("Local(x,y) = (%d,%d)\n",cursLocalX,cursLocalY);
-		System.out.printf("World(x,y) = (%d,%d)\n", cursor.X(),cursor.Y());
+		// Place the Pokemon Preview - TODO: This doesn't work, but isn't a huge deal
+		
+		if (cursLocalY>4) {
+			pokemonPreview.bottom();
+		} else {
+			pokemonPreview.top();
+		}
+		if (cursLocalX>4) {
+			pokemonPreview.left();
+		} else {
+			pokemonPreview.right();
+		}
 
 	}
 	

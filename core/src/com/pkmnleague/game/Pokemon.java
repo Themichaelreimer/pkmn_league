@@ -21,7 +21,7 @@ public class Pokemon extends MapObject{
 	private boolean moved;
 	
 	//The following is determined by the pokemon's name
-	Texture iconSprite, portraitSprite;
+	Texture iconSprite, portraitSpriteAtk, portraitSpriteDef;
 	
 	//TODO: Inventory list, including moves
 	
@@ -52,14 +52,14 @@ public class Pokemon extends MapObject{
 	}
 	
 	private static String getPortraitPath(String pokemonName) {
-		return String.format("assets/sprites/pokemon/portrait/%s.png",pokemonName);
+		return String.format("assets/sprites/pokemon/portrait/%s.png",pokemonName); //TODO: Append 2 for attacker, 1 for defender sprite
 	}
 	
 	public Pokemon(String name, int level) throws Exception {
 		Dataset data = Dataset.getDataset();
 		HashMap<String,String> pokemonData = data.lookupPokemon(name);
 		iconSprite = new Texture(getIconPath(name));
-		portraitSprite = new Texture(getPortraitPath(name));
+		portraitSpriteDef = new Texture(getPortraitPath(name));
 		this.texture = iconSprite;
 		
 		if(pokemonData == null) {
