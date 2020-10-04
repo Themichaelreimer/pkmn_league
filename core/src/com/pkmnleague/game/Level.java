@@ -193,6 +193,22 @@ public class Level {
 			objects[21][20] = pikachu;
 			objects[21][21] = sandshrew;
 			
+			Pokemon koffing = new Pokemon("koffing",5);
+			Pokemon weezing = new Pokemon("weezing",12);
+			Pokemon rattata = new Pokemon("rattata",7);
+			
+			koffing.setPos(24, 24);
+			weezing.setPos(23, 23);
+			rattata.setPos(23, 24);
+			
+			objects[24][24] = koffing;
+			objects[24][23] = rattata;
+			objects[23][23] = weezing;
+			
+			enemyPokemon.add(koffing);
+			enemyPokemon.add(weezing);
+			enemyPokemon.add(rattata);
+			
 		}catch(Exception exception) {
 			exception.printStackTrace();
 		}
@@ -405,9 +421,18 @@ public class Level {
 		//
 		// Colour team greyscale then blue using GLSL shader
 		//
+		
+		batch.setColor(0.3f, 0.6f, 1.0f, 1.0f);
 		for(int i=0;i<playerPokemon.size();i++)
 			playerPokemon.get(i).draw(batch,1);
 		//-------------------------------------------------
+		batch.setColor(Color.WHITE);
+		
+		batch.setColor(1.0f, 0.4f, 0.4f, 1.0f);
+		for(int i=0;i<enemyPokemon.size();i++)
+			enemyPokemon.get(i).draw(batch,1);
+		//-------------------------------------------------
+		batch.setColor(Color.WHITE);
 		
 		//Draw enemy team in red
 		cursor.draw(batch, 0.3f);

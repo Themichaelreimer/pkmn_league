@@ -48,7 +48,7 @@ public class Pokemon extends MapObject{
 	}
 	
 	private static String getIconPath(String pokemonName) {
-		return String.format("assets/sprites/pokemon/icon/%s.png",pokemonName);
+		return String.format("assets/sprites/pokemon/icon/%s_g.png",pokemonName);
 	}
 	
 	private static String getPortraitPath(String pokemonName) {
