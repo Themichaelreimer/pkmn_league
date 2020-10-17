@@ -73,6 +73,8 @@ public class Level {
 	
 	private Stage stage;
 	
+	private Menu menu;
+	
 	/**
 	 * Calculates the width and height of the viewport in tiles instead of pixels.
 	 * @return [width,height]
@@ -96,6 +98,8 @@ public class Level {
 		enemyPokemon = new ArrayList<Pokemon>();
 
 		cursor = new Cursor(15,26);
+		
+		menu = null;
 		
 		tiledMap = new TmxMapLoader().load(Gdx.files.internal(path).file().getAbsolutePath());
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
@@ -175,42 +179,36 @@ public class Level {
 			}
 		}
 		
+		makePokemonAtPosition("charmander",2,20,20,playerPokemon);
+		makePokemonAtPosition("pikachu",4,20,21,playerPokemon);
+		makePokemonAtPosition("sandshrew",9,21,21,playerPokemon);
+		
+		makePokemonAtPosition("koffing",5,24,24,enemyPokemon);
+		makePokemonAtPosition("weezing",12,23,23,enemyPokemon);
+		makePokemonAtPosition("rattata",7,23,24,enemyPokemon);
+
+		
+	}
+	
+	/**
+	 * Generates a new pokemon at a given level, at position (x,y) on the map.
+	 * This includes the actual generation, adding the pokemon to a team, Updating the pokemon's copordinates both internally and on the object layer
+	 * @param pokemon - Name of pokemon. If name doesn't match up, nothing will happen.
+	 * @param level - Level of pokemon being generated
+	 * @param x - x coord in map space
+	 * @param y - y coord in map space
+	 * @param team - Arraylist representing the team's pokemon
+	 */
+	public void makePokemonAtPosition(String pokemon, int level, int x, int y, ArrayList<Pokemon> team) {
 		try {
+			Pokemon pkmn = new Pokemon(pokemon,level);
+			pkmn.setPos(x, y);
+			objects[y][x] = pkmn;
+			team.add(pkmn);
 			
-			Pokemon charmander = new Pokemon("charmander",1);
-			Pokemon pikachu = new Pokemon("pikachu",4);
-			Pokemon sandshrew = new Pokemon("sandshrew",9);
-			
-			charmander.setPos(20,20);
-			pikachu.setPos(20,21);
-			sandshrew.setPos(21,21);
-			
-			playerPokemon.add(pikachu);
-			playerPokemon.add(charmander);
-			playerPokemon.add(sandshrew);
-			
-			objects[20][20] = charmander;
-			objects[21][20] = pikachu;
-			objects[21][21] = sandshrew;
-			
-			Pokemon koffing = new Pokemon("koffing",5);
-			Pokemon weezing = new Pokemon("weezing",12);
-			Pokemon rattata = new Pokemon("rattata",7);
-			
-			koffing.setPos(24, 24);
-			weezing.setPos(23, 23);
-			rattata.setPos(23, 24);
-			
-			objects[24][24] = koffing;
-			objects[24][23] = rattata;
-			objects[23][23] = weezing;
-			
-			enemyPokemon.add(koffing);
-			enemyPokemon.add(weezing);
-			enemyPokemon.add(rattata);
-			
-		}catch(Exception exception) {
-			exception.printStackTrace();
+		} catch(Exception e) {
+			System.out.printf("Unable to make pokemon (%s,%d) at (%d,%d)!\n",pokemon,level,x,y);
+			e.printStackTrace();
 		}
 		
 	}
@@ -257,6 +255,28 @@ public class Level {
 		System.out.println(str);
 	}
 	
+	public int[] calcMenuCoords() {
+		// Add offsets to make them draw in the desired place
+		int x = cursLocalX;
+		int y = cursLocalY;
+		
+		if(x+4 <= screenWidthTiles) {
+			x +=1;
+		}else {
+			x -=3;
+		}
+		if(y+6 <= screenHeightTiles) {
+			y +=1;
+		}else {
+			y -=5;
+		}
+		
+		int[] result = new int[2];
+		result[0] = 16*(x+screenWidthTiles);
+		result[1] = 16*(y+screenHeightTiles);
+		return result;
+	}
+	
 	public void mapClick() {
 		int[] coords = cursor.getPos();
 		int x = coords[0];
@@ -299,7 +319,8 @@ public class Level {
 				}
 			}else {
 				//Nothing on map and nothing selected. Do nothing.
-				
+				int[] menuCoords = calcMenuCoords();
+				menu = new Menu(this,menuCoords[0],menuCoords[1]);
 			}
 		}
 	}
@@ -417,10 +438,6 @@ public class Level {
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
 		
-		// Draw player's pokemon on board  IN BLUE-----------------
-		//
-		// Colour team greyscale then blue using GLSL shader
-		//
 		
 		batch.setColor(0.3f, 0.6f, 1.0f, 1.0f);
 		for(int i=0;i<playerPokemon.size();i++)
@@ -437,31 +454,48 @@ public class Level {
 		//Draw enemy team in red
 		cursor.draw(batch, 0.3f);
 		
-		/**********************************************************************************************************************/
-		/*   THIS "WORKS" BUT SCREWS UP OTHER RENDERING. TRANSFORMATIONS? RENDERING ORDER? TOO SLEEPY TO TEST THESE NOW.      */
-		/**********************************************************************************************************************/
+		if(menu != null) {
+			menu.draw(batch, 1);
+		}
+		
 		
 	}
 	
 	// TODO: Make handler functions depending on map state
 	public void keyDown(int keycode) {
-		if(keycode == Input.Keys.UP) {
-			up=true;
-		}
-		if(keycode == Input.Keys.DOWN) {
-			down=true;
-		}
-		if(keycode == Input.Keys.RIGHT) {
-			right=true;
-		}
-		if(keycode == Input.Keys.LEFT) {
-			left=true;
-		}
-		if(keycode == Input.Keys.X) {
-			mapClick();
-		}
-		if(keycode == Input.Keys.Z) {
-			cursor.cancel();
+		if( menu == null) {
+			if(keycode == Input.Keys.UP) {
+				up=true;
+			}
+			if(keycode == Input.Keys.DOWN) {
+				down=true;
+			}
+			if(keycode == Input.Keys.RIGHT) {
+				right=true;
+			}
+			if(keycode == Input.Keys.LEFT) {
+				left=true;
+			}
+			if(keycode == Input.Keys.X) {
+				mapClick();
+			}
+			if(keycode == Input.Keys.Z) {
+				cursor.cancel();
+			}
+		}else {
+			if(keycode == Input.Keys.UP) {
+				menu.up();
+			} else if (keycode == Input.Keys.DOWN) {
+				menu.down();
+			} else if(keycode == Input.Keys.X) {
+				if (menu.press()) {
+					menu = null;
+				}
+			} else if(keycode == Input.Keys.Z) {
+				if (menu.back()) {
+					menu = null;
+				}
+			}
 		}
 
 	}
