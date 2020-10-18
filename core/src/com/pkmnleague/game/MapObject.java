@@ -10,6 +10,8 @@ public class MapObject extends Actor {
 	
 	protected int[] coords;
 	protected Vector3 screenSpaceCoords;
+	protected boolean isSelected = false;
+	protected Cursor cursor;
 	
 	Texture texture;
 	
@@ -36,10 +38,29 @@ public class MapObject extends Actor {
 		coords[1] = y;
 	}
 	
+	public void select(Cursor curs) {
+		cursor = curs;
+		isSelected = true;
+	}
+	
+	public void deselect() {
+		cursor = null;
+		isSelected = false;
+	}
+	
 	protected float[] getTargetCamPos() {
 		float[] pos = new float[2];
-		pos[0] = 16f*coords[0];
-		pos[1] = 16f*coords[1];
+		if(isSelected) {
+			// Draw at cursor position
+			pos[0] = 16f*cursor.X();
+			pos[1] = 16f*cursor.Y();
+			
+		}else {
+			// Draw at actual position
+			pos[0] = 16f*coords[0];
+			pos[1] = 16f*coords[1];
+		}
+		
 		return pos;
 	}
 	

@@ -90,6 +90,14 @@ public class Level {
 		return this.stage;
 	}
 	
+	public float[] getViewPort() {
+		float[] res = new float[2];
+		res[0] = camera.viewportWidth;
+		res[1] = camera.viewportHeight;
+		return res;
+				
+	}
+	
 	public Level(String path, OrthographicCamera cam) {
 		// By convention, we will make the base layer define the playable bounds
 		
@@ -285,6 +293,8 @@ public class Level {
 		if(mapObj != null) {
 			if (cursor.hasSelectedObject()) {
 				// Pokemon Battle, maybe --- TODO: Tons
+				
+				
 			} else {
 				// Set selected object
 				
@@ -306,10 +316,14 @@ public class Level {
 					Pokemon mapPkmn = (Pokemon)cursMapObj;
 					
 					if(cursor.getMoveableTiles().contains(targetTile)) {
-						int[] oldPos = cursMapObj.getPosition();
-						moveMapObj(cursMapObj,oldPos[0],oldPos[1],x,y);
-						cursor.clearSelectedObject();
-						log("PLACED "+ mapPkmn.toString());
+						
+						int[] menuCoords = calcMenuCoords();
+						menu = new Menu(this,menuCoords[0],menuCoords[1]);
+						
+						//int[] oldPos = cursMapObj.getPosition();
+						//moveMapObj(cursMapObj,oldPos[0],oldPos[1],x,y);
+						//cursor.clearSelectedObject();
+						//log("PLACED "+ mapPkmn.toString());
 					}else {
 						cursor.cancel();
 					}
@@ -319,8 +333,7 @@ public class Level {
 				}
 			}else {
 				//Nothing on map and nothing selected. Do nothing.
-				int[] menuCoords = calcMenuCoords();
-				menu = new Menu(this,menuCoords[0],menuCoords[1]);
+				
 			}
 		}
 	}
@@ -488,11 +501,24 @@ public class Level {
 			} else if (keycode == Input.Keys.DOWN) {
 				menu.down();
 			} else if(keycode == Input.Keys.X) {
-				if (menu.press()) {
+				String action = menu.press();
+				if (action == "Move") {
+					int[] pos = cursor.getPos();
+					int x = pos[0];
+					int y = pos[1];
+					MapObject cursMapObj = cursor.getSelectedObject();
+					int[] oldPos = cursMapObj.getPosition();
+					moveMapObj(cursMapObj,oldPos[0],oldPos[1],x,y);
+					cursor.clearSelectedObject();
+					menu = null;
+				}
+				if (action == "Cancel") {
+					cursor.cancel();
 					menu = null;
 				}
 			} else if(keycode == Input.Keys.Z) {
 				if (menu.back()) {
+					cursor.cancel();
 					menu = null;
 				}
 			}
@@ -569,6 +595,64 @@ public class Level {
 		}
 		
 	}
+	
+	public ArrayList<Pokemon> getAdjacentAttackable(boolean isPlayer){
+		int x = cursor.X();
+		int y = cursor.Y();
+		Pokemon curPoke = (Pokemon)cursor.getSelectedObject();
+		ArrayList<Pokemon> result = new ArrayList<Pokemon>();
+		ArrayList<Pokemon> list = isPlayer ? enemyPokemon : playerPokemon;
+		
+		Pokemon p = (Pokemon)objects[y+1][x];
+		if(p != null && list.contains(p) && p!=curPoke)
+			result.add(p);
+		p = (Pokemon)objects[y][x+1];
+		if(p != null && list.contains(p) && p!=curPoke)
+			result.add(p);
+		p = (Pokemon)objects[y-1][x];
+		if(p != null && list.contains(p) && p!=curPoke)
+			result.add(p);
+		p = (Pokemon)objects[y][x-1];
+		if(p != null && list.contains(p) && p!=curPoke)
+			result.add(p);
+		
+		return result;
+		
+	}
+	
+	public ArrayList<Pokemon> getAdjacentTradable(boolean isPlayer){
+		int x = cursor.X();
+		int y = cursor.Y();
+		Pokemon curPoke = (Pokemon)cursor.getSelectedObject();
+		ArrayList<Pokemon> result = new ArrayList<Pokemon>();
+		ArrayList<Pokemon> list = isPlayer ? playerPokemon : enemyPokemon;
+		
+		Pokemon p = (Pokemon)objects[y+1][x];
+		if(p != null && list.contains(p) && p!=curPoke)
+			result.add(p);
+		p = (Pokemon)objects[y][x+1];
+		if(p != null && list.contains(p) && p!=curPoke)
+			result.add(p);
+		p = (Pokemon)objects[y-1][x];
+		if(p != null && list.contains(p) && p!=curPoke)
+			result.add(p);
+		p = (Pokemon)objects[y][x-1];
+		if(p != null && list.contains(p) && p!=curPoke)
+			result.add(p);
+		
+		return result;
+	}
+	/**
+	 * Returns the camera position in tiles
+	 * @return Camera Position in Tiles
+	 */
+	public int[] getCamPos() {
+		int[] result = new int[2];
+		result[0] = (int)(targetCameraPos.x/16);
+		result[1] = (int)(targetCameraPos.y/16);
+		return result;
+	}
+
 	
 	//Handles a cursor movement request on the map
 	public void mapMove(int dx, int dy) {

@@ -36,6 +36,7 @@ public class Cursor extends Actor {
 	
 	public void cancel() {
 		if(selectedObject1 != null)
+			selectedObject1.deselect();
 			selectedObject1 = null;
 		if(moveableTiles != null)
 			moveableTiles = null;
@@ -72,11 +73,14 @@ public class Cursor extends Actor {
 	public void setSelectedObject(MapObject obj, ArrayList<Tile> tiles) {
 		selectedObject1 = obj;
 		moveableTiles = tiles;
+		selectedObject1.select(this);
 	}
 	
 	public void clearSelectedObject() {
+		selectedObject1.deselect();
 		selectedObject1 = null;
 		moveableTiles = null;
+		
 	}
 	
 	public ArrayList<Tile> getMoveableTiles(){
