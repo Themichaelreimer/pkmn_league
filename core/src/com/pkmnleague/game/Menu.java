@@ -83,6 +83,11 @@ public class Menu extends Actor{
 				selectorIndex=0;
 				state = STATE.SELECT_TRADE;
 			}
+		}else if(state == STATE.SELECT_ATTACK) {
+			// TODO: This should go to the battle confirm state later
+			// But for now, I will just go straight to battle
+			level.makeBattle(pokemon,attackable.get(selectorIndex),true);
+			return "Battle";
 		}
 
 		return "";
@@ -114,6 +119,7 @@ public class Menu extends Actor{
 		state = STATE.DEFAULT;
 		
 		level = srcLevel;
+		pokemon = (Pokemon) level.getCursorMapObj();
 		
 		tradeable = level.getAdjacentTradable(true);
 		attackable = level.getAdjacentAttackable(true);

@@ -10,6 +10,7 @@ public class Pokemon extends MapObject{
 	// The following is directly derived from pokemon.csv and stored here on load
 	private String name;
 	private String type1,type2;
+	private int damage; // Current damage points. curHP = hp-this;
 	private int hp,atk,def,spd,spAtk,spDef,acc;
 	private int hpGrowth, atkGrowth, defGrowth,spdGrowth,spAtkGrowth,spDefGrowth,accGrowth;
 	private int move;
@@ -21,7 +22,7 @@ public class Pokemon extends MapObject{
 	private boolean moved;
 	
 	//The following is determined by the pokemon's name
-	Texture iconSprite, portraitSpriteAtk, portraitSpriteDef;
+	public Texture iconSprite, portraitSpriteAtk, portraitSpriteDef;
 	
 	//TODO: Inventory list, including moves
 	
@@ -29,6 +30,10 @@ public class Pokemon extends MapObject{
 		SLOW,
 		MEDIUM,
 		FAST
+	}
+	
+	public int currentHP() {
+		return hp-damage;
 	}
 	
 	public boolean hasMoved() {
@@ -55,11 +60,16 @@ public class Pokemon extends MapObject{
 		return String.format("assets/sprites/pokemon/portrait/%s.png",pokemonName); //TODO: Append 2 for attacker, 1 for defender sprite
 	}
 	
+	private static String getBackPath(String pokemonName) {
+		return String.format("assets/sprites/pokemon/back/%s.png",pokemonName); //TODO: Append 2 for attacker, 1 for defender sprite
+	}
+	
 	public Pokemon(String name, int level) throws Exception {
 		Dataset data = Dataset.getDataset();
 		HashMap<String,String> pokemonData = data.lookupPokemon(name);
 		iconSprite = new Texture(getIconPath(name));
-		portraitSpriteDef = new Texture(getPortraitPath(name));
+		//portraitSpriteAtk = new Texture(getBackPath(name));
+		this.portraitSpriteDef = new Texture(getPortraitPath(name));
 		this.texture = iconSprite;
 		
 		if(pokemonData == null) {
@@ -101,6 +111,23 @@ public class Pokemon extends MapObject{
 	
 	public String getName() {
 		return this.name;
+	}
+	
+	/**
+	 * [0] - Pokemon Name
+	 * [1] - Level
+	 * [2] - HP
+	 * [3] - Max HP 
+	 * 
+	 * @return String array. See above
+	 */
+	public String[] battleDescStrs() {
+		String[] res = new String[4];
+		res[0] = this.name;
+		res[1] = String.format("%d", this.level); // I feel like this is "stupid"
+		res[2] = String.format("%d", currentHP()); // I feel like this is "stupid"
+		res[3] = String.format("%d", this.hp); // I feel like this is "stupid"
+		return res;
 	}
 	
 	public String getDescStr() {

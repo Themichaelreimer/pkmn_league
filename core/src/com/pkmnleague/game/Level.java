@@ -74,6 +74,7 @@ public class Level {
 	private Stage stage;
 	
 	private Menu menu;
+	private Battle battle;
 	
 	/**
 	 * Calculates the width and height of the viewport in tiles instead of pixels.
@@ -108,6 +109,7 @@ public class Level {
 		cursor = new Cursor(15,26);
 		
 		menu = null;
+		battle = null;
 		
 		tiledMap = new TmxMapLoader().load(Gdx.files.internal(path).file().getAbsolutePath());
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
@@ -263,6 +265,10 @@ public class Level {
 		System.out.println(str);
 	}
 	
+	public void makeBattle(Pokemon attacker, Pokemon defender, boolean playerInit) {
+		battle = new Battle(this,attacker,defender, playerInit);
+	}
+	
 	public int[] calcMenuCoords() {
 		// Add offsets to make them draw in the desired place
 		int x = cursLocalX;
@@ -285,6 +291,13 @@ public class Level {
 		return result;
 	}
 	
+	public MapObject getCursorHoverObject() {
+		int[] coords = cursor.getPos();
+		int x = coords[0];
+		int y = coords[1];
+		return objects[y][x];
+	}
+	
 	public void mapClick() {
 		int[] coords = cursor.getPos();
 		int x = coords[0];
@@ -293,7 +306,10 @@ public class Level {
 		if(mapObj != null) {
 			if (cursor.hasSelectedObject()) {
 				// Pokemon Battle, maybe --- TODO: Tons
-				
+				if(cursor.getSelectedObject() == mapObj) {
+					int[] menuCoords = calcMenuCoords();
+					menu = new Menu(this,menuCoords[0],menuCoords[1]);
+				}
 				
 			} else {
 				// Set selected object
@@ -320,10 +336,6 @@ public class Level {
 						int[] menuCoords = calcMenuCoords();
 						menu = new Menu(this,menuCoords[0],menuCoords[1]);
 						
-						//int[] oldPos = cursMapObj.getPosition();
-						//moveMapObj(cursMapObj,oldPos[0],oldPos[1],x,y);
-						//cursor.clearSelectedObject();
-						//log("PLACED "+ mapPkmn.toString());
 					}else {
 						cursor.cancel();
 					}
@@ -441,7 +453,7 @@ public class Level {
 		moveCameraToTargetPos();
 		inputHandler();
 		
-		if(objects[cursor.Y()][cursor.X()] == null) {
+		if(objects[cursor.Y()][cursor.X()] == null || battle != null) {
 			pokemonPreview.setVisible(false);
 		}else {
 			pokemonPreview.setVisible(true);
@@ -471,7 +483,39 @@ public class Level {
 			menu.draw(batch, 1);
 		}
 		
+		if(battle != null) {
+			battle.draw(batch,1);
+		}
 		
+		
+	}
+	
+	public void moveToNextFreePokemon() {
+		MapObject obj = getCursorHoverObject();
+		boolean getNext=false;
+		// Search for first unmoved pokemon
+		if(obj != null && playerPokemon.contains(obj)) {
+			int iPokemon = playerPokemon.indexOf(obj);
+			iPokemon = (iPokemon+1)%playerPokemon.size();
+			Pokemon pokemon = playerPokemon.get(iPokemon);
+			while(pokemon.hasMoved()) {
+				iPokemon = (iPokemon+1)%playerPokemon.size();
+				pokemon = playerPokemon.get(iPokemon);
+			}
+			//Move cursor
+			int[] coords = pokemon.coords;
+			cursor.setPos(coords[0], coords[1]);
+			
+		}else{
+			for(int i=0;i<playerPokemon.size();i++) {
+				Pokemon pokemon = playerPokemon.get(i);
+				if(!pokemon.hasMoved()) {
+					//Move cursor
+					int[] coords = pokemon.coords;
+					cursor.setPos(coords[0], coords[1]);
+				}
+			}
+		}
 	}
 	
 	// TODO: Make handler functions depending on map state
@@ -495,6 +539,9 @@ public class Level {
 			if(keycode == Input.Keys.Z) {
 				cursor.cancel();
 			}
+			if(keycode == Input.Keys.A) {
+				moveToNextFreePokemon();
+			}
 		}else {
 			if(keycode == Input.Keys.UP) {
 				menu.up();
@@ -502,7 +549,8 @@ public class Level {
 				menu.down();
 			} else if(keycode == Input.Keys.X) {
 				String action = menu.press();
-				if (action == "Move") {
+				if (action == "Move" || action == "Battle") {
+					//Note: The menu creates the battle object
 					int[] pos = cursor.getPos();
 					int x = pos[0];
 					int y = pos[1];
@@ -512,7 +560,7 @@ public class Level {
 					cursor.clearSelectedObject();
 					menu = null;
 				}
-				if (action == "Cancel") {
+				else if (action == "Cancel") {
 					cursor.cancel();
 					menu = null;
 				}
@@ -603,18 +651,27 @@ public class Level {
 		ArrayList<Pokemon> result = new ArrayList<Pokemon>();
 		ArrayList<Pokemon> list = isPlayer ? enemyPokemon : playerPokemon;
 		
-		Pokemon p = (Pokemon)objects[y+1][x];
-		if(p != null && list.contains(p) && p!=curPoke)
-			result.add(p);
-		p = (Pokemon)objects[y][x+1];
-		if(p != null && list.contains(p) && p!=curPoke)
-			result.add(p);
-		p = (Pokemon)objects[y-1][x];
-		if(p != null && list.contains(p) && p!=curPoke)
-			result.add(p);
-		p = (Pokemon)objects[y][x-1];
-		if(p != null && list.contains(p) && p!=curPoke)
-			result.add(p);
+		Pokemon p;
+		if(y+1<height) {
+			p = (Pokemon)objects[y+1][x];
+			if(p != null && list.contains(p) && p!=curPoke)
+				result.add(p);
+		}
+		if(x+1<width) {
+			p = (Pokemon)objects[y][x+1];
+			if(p != null && list.contains(p) && p!=curPoke)
+				result.add(p);
+		}
+		if(y-1>0) {
+			p = (Pokemon)objects[y-1][x];
+			if(p != null && list.contains(p) && p!=curPoke)
+				result.add(p);
+		}
+		if(x-1>0) {
+			p = (Pokemon)objects[y][x-1];
+			if(p != null && list.contains(p) && p!=curPoke)
+				result.add(p);
+		}
 		
 		return result;
 		
@@ -627,18 +684,28 @@ public class Level {
 		ArrayList<Pokemon> result = new ArrayList<Pokemon>();
 		ArrayList<Pokemon> list = isPlayer ? playerPokemon : enemyPokemon;
 		
-		Pokemon p = (Pokemon)objects[y+1][x];
-		if(p != null && list.contains(p) && p!=curPoke)
-			result.add(p);
-		p = (Pokemon)objects[y][x+1];
-		if(p != null && list.contains(p) && p!=curPoke)
-			result.add(p);
-		p = (Pokemon)objects[y-1][x];
-		if(p != null && list.contains(p) && p!=curPoke)
-			result.add(p);
-		p = (Pokemon)objects[y][x-1];
-		if(p != null && list.contains(p) && p!=curPoke)
-			result.add(p);
+		Pokemon p;
+		if(y+1<height) {
+			p = (Pokemon)objects[y+1][x];
+			if(p != null && list.contains(p) && p!=curPoke)
+				result.add(p);
+		}
+		if(x+1<width) {
+			p = (Pokemon)objects[y][x+1];
+			if(p != null && list.contains(p) && p!=curPoke)
+				result.add(p);
+		}
+		if(y-1>0) {
+			p = (Pokemon)objects[y-1][x];
+			if(p != null && list.contains(p) && p!=curPoke)
+				result.add(p);
+		}
+		if(x-1>0) {
+			p = (Pokemon)objects[y][x-1];
+			if(p != null && list.contains(p) && p!=curPoke)
+				result.add(p);
+		}
+
 		
 		return result;
 	}
@@ -652,7 +719,22 @@ public class Level {
 		result[1] = (int)(targetCameraPos.y/16);
 		return result;
 	}
+	public int[] getCamPos(boolean inTiles) {
+		int[] result = new int[2];
+		if(inTiles) {
+			result[0] = (int)(targetCameraPos.x/16);
+			result[1] = (int)(targetCameraPos.y/16);
+		}else {
+			result[0] = (int)(targetCameraPos.x);
+			result[1] = (int)(targetCameraPos.y);
+		}
 
+		return result;
+	}
+
+	public MapObject getCursorMapObj() {
+		return cursor.getSelectedObject();
+	}
 	
 	//Handles a cursor movement request on the map
 	public void mapMove(int dx, int dy) {
