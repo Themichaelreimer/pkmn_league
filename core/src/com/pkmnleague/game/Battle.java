@@ -36,10 +36,37 @@ public class Battle extends Actor{
 		ply = 0;
 	}
 	
+	public int calcDamage(Pokemon atk, Pokemon def) {
+		// TODO: This will eventually look at the equipped move
+		// And can determine physical or special
+		int res = atk.getAttack() - def.getDefence();
+		if (res<0)
+			res = 0;
+		return res;
+	}
+	
+	public int calcAttacks(Pokemon atk, Pokemon def) {
+		
+		if(atk.getName().equalsIgnoreCase("pikachu"))
+			return 2;
+		return 1;
+	}
+	
+	public String[] statisticsStrings(Pokemon me, Pokemon other) {
+		String[] strs = new String[4];
+		strs[0] = String.format("DMG: %d", calcDamage(me,other));
+		strs[1] = "HIT:    90";
+		strs[2] = "CRT:   5";
+		strs[3] =  String.format("ATKS: %d", calcAttacks(me,other));
+		return strs;
+	}
+	
 	public void draw(Batch batch, float alpha) {
 		
 		String[] playerStrs = this.player.battleDescStrs();
 		String[] enemyStrs = this.enemy.battleDescStrs();
+		String[] playerStats = statisticsStrings(player,enemy);
+		String[] enemyStats = statisticsStrings(enemy,player);
 		
 		String playerLine1 = String.format("%s - Lv. %s", playerStrs[0],playerStrs[1]);
 		String playerLine2 = String.format("HP: %s/%s",playerStrs[2],playerStrs[3]); // TODO, replace this with bar( Or both?)
@@ -98,13 +125,28 @@ public class Battle extends Actor{
 		batch.draw(statusBoxL,frameX+16,enemyPokemonY+32,frameWidth/2,statusBoxHeight);
 		
 		// Text
+		
+		// Player status
 		font.draw(batch, playerLine1, playerBoxX + 32, playerBoxY + statusBoxHeight - 16);
 		font.draw(batch, playerLine2, playerBoxX + 32, playerBoxY + statusBoxHeight - 32);
 		font.draw(batch, playerLine3, playerBoxX + 32, playerBoxY + statusBoxHeight - 48);
 		
+		// Enemy status
 		font.draw(batch, enemyLine1, enemyBoxX + 40, enemyBoxY + statusBoxHeight);
 		font.draw(batch, enemyLine2, enemyBoxX + 40, enemyBoxY + statusBoxHeight - 16);
 		font.draw(batch, enemyLine3, enemyBoxX + 40, enemyBoxY + statusBoxHeight - 32);
+		
+		// Player statistics box
+		font.draw(batch, playerStats[0], frameX+32, frameY+statBoxHeight-20);
+		font.draw(batch, playerStats[1], frameX+32, frameY+statBoxHeight-40);
+		font.draw(batch, playerStats[2], frameX+128, frameY+statBoxHeight-40);
+		font.draw(batch, playerStats[3], frameX+128, frameY+statBoxHeight-20);
+		
+		// Enemy statistics box
+		font.draw(batch, enemyStats[0], frameX+(frameWidth/2)+32, frameY+statBoxHeight-20);
+		font.draw(batch, enemyStats[1], frameX+(frameWidth/2)+32, frameY+statBoxHeight-40);
+		font.draw(batch, enemyStats[2], frameX+(frameWidth/2)+128, frameY+statBoxHeight-40);
+		font.draw(batch, enemyStats[3], frameX+(frameWidth/2)+128, frameY+statBoxHeight-20);
 
 	}
 	

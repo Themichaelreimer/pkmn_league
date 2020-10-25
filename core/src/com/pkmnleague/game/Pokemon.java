@@ -36,6 +36,14 @@ public class Pokemon extends MapObject{
 		return hp-damage;
 	}
 	
+	public int getAttack() {
+		return this.atk;
+	}
+	
+	public int getDefence() {
+		return this.def;
+	}
+	
 	public boolean hasMoved() {
 		return moved;
 	}
