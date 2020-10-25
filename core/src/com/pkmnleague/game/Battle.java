@@ -90,7 +90,7 @@ public class Battle extends Actor{
 		batch.draw(whiteBox,frameX+(frameWidth/2),frameY+16,frameWidth/2-6 ,statBoxHeight);
 		
 		// Pokemon
-		batch.draw(player.portraitSpriteDef,playerPokemonX-pokemonSize/2,playerPokemonY,pokemonSize,pokemonSize);
+		batch.draw(player.portraitSpriteAtk,playerPokemonX-pokemonSize,playerPokemonY-pokemonSize/2,2*pokemonSize,2*pokemonSize);
 		batch.draw(enemy.portraitSpriteDef,enemyPokemonX,enemyPokemonY,pokemonSize,pokemonSize);
 		
 		// Status Boxes

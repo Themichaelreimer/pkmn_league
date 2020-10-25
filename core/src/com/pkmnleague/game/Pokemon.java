@@ -68,7 +68,7 @@ public class Pokemon extends MapObject{
 		Dataset data = Dataset.getDataset();
 		HashMap<String,String> pokemonData = data.lookupPokemon(name);
 		iconSprite = new Texture(getIconPath(name));
-		//portraitSpriteAtk = new Texture(getBackPath(name));
+		this.portraitSpriteAtk = new Texture(getBackPath(name));
 		this.portraitSpriteDef = new Texture(getPortraitPath(name));
 		this.texture = iconSprite;
 		
