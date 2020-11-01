@@ -518,6 +518,7 @@ public class Level {
 		}
 	}
 	
+	// TODO: Make Controller class, that calls up/down/press/back, L, R
 	// TODO: Make handler functions depending on map state
 	public void keyDown(int keycode) {
 		if( menu == null) {

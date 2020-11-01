@@ -1,5 +1,6 @@
 package com.pkmnleague.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -153,4 +154,98 @@ public class Battle extends Actor{
 	public boolean canDouble(Pokemon attacker, Pokemon defender) {
 		return false;
 	}
+	
+	private class PlayerAnimation{
+		
+		Texture sprite;
+		int originX, originY;
+		float t;
+		float duration;
+		boolean isDone;
+		
+		PlayerAnimation(Texture sprite, float duration, int originX, int originY){
+			this.sprite = sprite;
+			this.originX = originX;
+			this.originY = originY;
+			this.t = 0.0f;
+			this.duration = duration;
+			this.isDone = false;
+			
+		}
+		
+		void draw() {
+			float dt = Gdx.graphics.getDeltaTime();
+			
+			if(!isDone) {
+				this.t = t + dt;
+				if(this.t > this.duration)
+					isDone = true;
+			}
+				
+		}
+		
+	}
+	
+	private class EnemyAnimation{
+		
+		Texture sprite;
+		int originX, originY;
+		float t;
+		float duration;
+		boolean isDone;
+		
+		EnemyAnimation(Texture sprite, float duration, int originX, int originY){
+			this.sprite = sprite;
+			this.originX = originX;
+			this.originY = originY;
+			this.t = 0.0f;
+			this.duration = duration;
+			this.isDone = false;
+			
+		}
+		
+		void draw() {
+			float dt = Gdx.graphics.getDeltaTime();
+			
+			if(!isDone) {
+				this.t = t + dt;
+				if(this.t > this.duration)
+					isDone = true;
+			}
+				
+		}
+		
+	}
+		
+	private class TextAnimation{
+		
+		String string;
+		int originX, originY;
+		float t;
+		float duration;
+		boolean isDone;
+		
+		TextAnimation(String str, float duration, int originX, int originY){
+			this.string = str;
+			this.originX = originX;
+			this.originY = originY;
+			this.t = 0.0f;
+			this.duration = 0.0f;
+			this.isDone = false;
+			
+		}
+		
+		void draw() {
+			float dt = Gdx.graphics.getDeltaTime();
+			
+			if(!isDone) {
+				this.t = t + dt;
+				if(this.t > this.duration)
+					isDone = true;
+			}
+		}
+		
+		
+	}
+	
 }
