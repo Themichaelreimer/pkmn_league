@@ -12,10 +12,14 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 public class Battle extends Actor{
 
 	private Pokemon player, enemy;
+	private PlayerAnimation playerAnim;
+	private EnemyAnimation enemyAnim;
 	private boolean playerInit;
 	private Level level;
 	//private ShapeRenderer sr;
 	private int ply;
+	private BATTLE_STATE state;
+	
 	private BitmapFont font;
 	
 	private static Texture whiteBox = new Texture("assets/sprites/battle/fg_box1.png");
@@ -24,6 +28,15 @@ public class Battle extends Actor{
 	
 	private static Texture playerSideBG = new Texture("assets/sprites/battle/bg_player_grass.png");
 	private static Texture enemySideBG = new Texture("assets/sprites/battle/bg_enemy_grass.png");
+	
+	enum BATTLE_STATE{
+		INIT,
+		PLAYER_ATTACK,
+		ENEMY_HIT,
+		ENEMY_ATTACK,
+		PLAYER_HIT,
+		RESOLUTION
+	}
 	
 	
 	public Battle(Level level,Pokemon player, Pokemon enemy, boolean playerInitiated) {
@@ -35,6 +48,8 @@ public class Battle extends Actor{
 		this.font = new BitmapFont();
 		font.setColor(0.0f, 0.0f, 0.0f, 1.0f);
 		ply = 0;
+		state=BATTLE_STATE.INIT;
+		
 	}
 	
 	public int calcDamage(Pokemon atk, Pokemon def) {
@@ -62,7 +77,37 @@ public class Battle extends Actor{
 		return strs;
 	}
 	
+	public void handleBattleState() {
+		
+		// Idea: Trigger animations at state transitions
+		// If no animations are playing, handle next transitino
+		if(state == BATTLE_STATE.INIT) {
+			if(this.playerInit) {
+				state = BATTLE_STATE.PLAYER_ATTACK;
+				playerAnim.playAttackAnimation();
+			}
+		}
+
+		if(state == BATTLE_STATE.PLAYER_ATTACK) {
+			if(!playerAnim.playingAttackAnimation) {
+				state = BATTLE_STATE.ENEMY_HIT;
+				enemyAnim.playHitAnimation();
+			}
+		}else if (state == BATTLE_STATE.ENEMY_HIT) {
+			if(!enemyAnim.playingHitAnimation) {
+				state = BATTLE_STATE.ENEMY_ATTACK;
+				enemyAnim.playAttackAnimation();
+			}
+		}else if (state == BATTLE_STATE.ENEMY_ATTACK) {
+			if(!enemyAnim.playingAttackAnimation) {
+				state = BATTLE_STATE.PLAYER_HIT;
+			}
+		}
+	}
+	
 	public void draw(Batch batch, float alpha) {
+		
+		
 		
 		String[] playerStrs = this.player.battleDescStrs();
 		String[] enemyStrs = this.enemy.battleDescStrs();
@@ -104,6 +149,24 @@ public class Battle extends Actor{
 		int enemyBoxY = enemyPokemonY+16;
 		
 		int statusBoxHeight = frameHeight/5;
+		
+		int realPlayerX = playerPokemonX-pokemonSize;
+		int realPlayerY = playerPokemonY-pokemonSize/2;
+		int playerSize = 2*pokemonSize;
+		
+		int realEnemyX = enemyPokemonX;
+		int realEnemyY = enemyPokemonY;
+		int enemySize = pokemonSize;
+		
+		if(playerAnim == null) {
+			playerAnim = new PlayerAnimation(player.portraitSpriteAtk,realPlayerX,realPlayerY,playerSize,playerSize);
+			playerAnim.playAttackAnimation();
+		}
+			
+		if(enemyAnim == null)
+			enemyAnim = new EnemyAnimation(enemy.portraitSpriteDef, realEnemyX, realEnemyY, enemySize,enemySize);
+		
+		handleBattleState(); // This has to happen here so we know the anims are not null
 				
 		// Frame
 		batch.draw(whiteBox,frameX, frameY, frameWidth, frameHeight);
@@ -118,15 +181,16 @@ public class Battle extends Actor{
 		batch.draw(whiteBox,frameX+(frameWidth/2),frameY+16,frameWidth/2-6 ,statBoxHeight);
 		
 		// Pokemon
-		batch.draw(player.portraitSpriteAtk,playerPokemonX-pokemonSize,playerPokemonY-pokemonSize/2,2*pokemonSize,2*pokemonSize);
-		batch.draw(enemy.portraitSpriteDef,enemyPokemonX,enemyPokemonY,pokemonSize,pokemonSize);
+		//batch.draw(player.portraitSpriteAtk,playerPokemonX-pokemonSize,playerPokemonY-pokemonSize/2,2*pokemonSize,2*pokemonSize);
+		//batch.draw(enemy.portraitSpriteDef,enemyPokemonX,enemyPokemonY,pokemonSize,pokemonSize);
+		playerAnim.draw(batch);
+		enemyAnim.draw(batch);
+		
 		
 		// Status Boxes
 		batch.draw(statusBoxR,frameX+(frameWidth/2)-10,playerPokemonY+16,frameWidth/2,statusBoxHeight);
 		batch.draw(statusBoxL,frameX+16,enemyPokemonY+32,frameWidth/2,statusBoxHeight);
-		
-		// Text
-		
+				
 		// Player status
 		font.draw(batch, playerLine1, playerBoxX + 32, playerBoxY + statusBoxHeight - 16);
 		font.draw(batch, playerLine2, playerBoxX + 32, playerBoxY + statusBoxHeight - 32);
@@ -159,92 +223,175 @@ public class Battle extends Actor{
 		
 		Texture sprite;
 		int originX, originY;
+		int sizeX, sizeY;
 		float t;
-		float duration;
+		float duration = 1.0f;
 		boolean isDone;
+		boolean playingAttackAnimation;
+		boolean playingHitAnimation;
 		
-		PlayerAnimation(Texture sprite, float duration, int originX, int originY){
+		PlayerAnimation(Texture sprite, int originX, int originY, int sizeX, int sizeY){
 			this.sprite = sprite;
 			this.originX = originX;
 			this.originY = originY;
+			this.sizeX = sizeX;
+			this.sizeY = sizeY;
 			this.t = 0.0f;
-			this.duration = duration;
-			this.isDone = false;
-			
+			this.isDone = true;
 		}
 		
-		void draw() {
-			float dt = Gdx.graphics.getDeltaTime();
+		boolean isDone() {
+			return this.isDone;
+		}
+		
+		void drawAttackingAnimation(Batch batch) {
+			//System.out.printf("Attacking: t=%f\n",t);
+			batch.draw(this.sprite,originX+calcOffset(t),originY,sizeX,sizeY);
+		}
+		
+		void drawHitAnimation(Batch batch) {
+			//System.out.printf("Hit: t=%f\n",t);
+			if(inRange(t,0.0f,0.25f) || inRange(t,0.5f,0.75f)) {
+				batch.draw(this.sprite,originX,originY,sizeX,sizeY);
+			}
+		}
+		
+		void draw(Batch batch) {
 			
 			if(!isDone) {
-				this.t = t + dt;
-				if(this.t > this.duration)
+				float dt = Gdx.graphics.getDeltaTime();
+				this.t += dt;
+				
+				System.out.printf("dt: %f t=%f\n",dt,t);
+
+				
+				if(playingAttackAnimation)
+					drawAttackingAnimation(batch);
+				else if(playingHitAnimation)
+					drawHitAnimation(batch);
+				
+				if(this.t > this.duration) {
 					isDone = true;
+					playingAttackAnimation = false;
+					playingHitAnimation = false;
+				}
+				
+			} else {
+				batch.draw(this.sprite,originX,originY,sizeX,sizeY);
 			}
 				
+		}
+		private boolean inRange(float x, float low, float high) {
+			return (low <= x && x <= high);
+		}
+		
+		private float calcOffset(float t) {
+			if(t<0.3f)
+				return 0.0f;
+			else if(this.t < this.duration)
+				return 4*16*t;
+			return 0.0f;
+		}
+		
+		void playAttackAnimation() {
+			this.t = 0.0f;
+			this.isDone = false;
+			this.playingAttackAnimation = true;
+		}
+		
+		void playHitAnimation() {
+			this.t = 0.0f;
+			this.isDone = false;
+			this.playingHitAnimation = true;
 		}
 		
 	}
 	
-	private class EnemyAnimation{
+private class EnemyAnimation{
 		
 		Texture sprite;
 		int originX, originY;
+		int sizeX, sizeY;
 		float t;
-		float duration;
+		float duration = 1.0f;
 		boolean isDone;
+		boolean playingAttackAnimation;
+		boolean playingHitAnimation;
 		
-		EnemyAnimation(Texture sprite, float duration, int originX, int originY){
+		EnemyAnimation(Texture sprite, int originX, int originY, int sizeX, int sizeY){
 			this.sprite = sprite;
 			this.originX = originX;
 			this.originY = originY;
+			this.sizeX = sizeX;
+			this.sizeY = sizeY;
 			this.t = 0.0f;
-			this.duration = duration;
-			this.isDone = false;
+			this.isDone = true;
 			
 		}
 		
-		void draw() {
-			float dt = Gdx.graphics.getDeltaTime();
+		boolean isDone() {
+			return this.isDone;
+		}
+		
+		void drawAttackingAnimation(Batch batch) {
+			System.out.printf("Attacking: t=%f\n",t);
+			batch.draw(this.sprite,originX-calcOffset(t),originY,sizeX,sizeY);
+		}
+		
+		void drawHitAnimation(Batch batch) {
+			System.out.printf("Hit: t=%f\n",t);
+			if(inRange(t,0.0f,0.25f) || inRange(t,0.5f,0.75f)) {
+				batch.draw(this.sprite,originX,originY,sizeX,sizeY);
+			}
+		}
+		
+		void draw(Batch batch) {
 			
 			if(!isDone) {
-				this.t = t + dt;
-				if(this.t > this.duration)
+				System.out.printf("ANIMATION\n");
+				float dt = Gdx.graphics.getDeltaTime();
+				this.t += dt;
+				
+				if(playingAttackAnimation)
+					drawAttackingAnimation(batch);
+				else if(playingHitAnimation)
+					drawHitAnimation(batch);
+				
+				if(this.t > this.duration) {
 					isDone = true;
+					playingAttackAnimation = false;
+					playingHitAnimation = false;
+				}
+				
+			} else {
+				System.out.printf("STATIC\n");
+				batch.draw(this.sprite,originX,originY,sizeX,sizeY);
 			}
 				
 		}
+		private boolean inRange(float x, float low, float high) {
+			return (low <= x && x <= high);
+		}
 		
-	}
+		private float calcOffset(float t) {
+			if(t<0.3f)
+				return 0.0f;
+			else if(this.t < this.duration)
+				return 4*16*t;
+			return 0.0f;
+		}
 		
-	private class TextAnimation{
-		
-		String string;
-		int originX, originY;
-		float t;
-		float duration;
-		boolean isDone;
-		
-		TextAnimation(String str, float duration, int originX, int originY){
-			this.string = str;
-			this.originX = originX;
-			this.originY = originY;
+		void playAttackAnimation() {
 			this.t = 0.0f;
-			this.duration = 0.0f;
 			this.isDone = false;
-			
+			this.playingAttackAnimation = true;
 		}
 		
-		void draw() {
-			float dt = Gdx.graphics.getDeltaTime();
-			
-			if(!isDone) {
-				this.t = t + dt;
-				if(this.t > this.duration)
-					isDone = true;
-			}
+		void playHitAnimation() {
+			this.t = 0.0f;
+			this.isDone = false;
+			this.playingHitAnimation = true;
 		}
-		
 		
 	}
 	
