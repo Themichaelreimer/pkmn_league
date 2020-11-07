@@ -29,6 +29,11 @@ public class Battle extends Actor{
 	private static Texture playerSideBG = new Texture("assets/sprites/battle/bg_player_grass.png");
 	private static Texture enemySideBG = new Texture("assets/sprites/battle/bg_enemy_grass.png");
 	
+	private static Texture greenbar = new Texture("assets/sprites/battle/hp-bar-green.png");
+	private static Texture yellowbar = new Texture("assets/sprites/battle/hp-bar-yellow.png");
+	private static Texture redbar = new Texture("assets/sprites/battle/hp-bar-red.png");
+
+	
 	enum BATTLE_STATE{
 		INIT,
 		PLAYER_ATTACK,
@@ -213,10 +218,33 @@ public class Battle extends Actor{
 		font.draw(batch, enemyStats[2], frameX+(frameWidth/2)+128, frameY+statBoxHeight-40);
 		font.draw(batch, enemyStats[3], frameX+(frameWidth/2)+128, frameY+statBoxHeight-20);
 
+		// HP Bars
+		drawHpBar(batch, player.totalHP(), player.currentHP(), playerBoxX + 96, playerBoxY + statusBoxHeight - 44 );
+		drawHpBar(batch, enemy.totalHP(), enemy.currentHP(), enemyBoxX + 110, enemyBoxY + statusBoxHeight - 26);
+		
 	}
 	
 	public boolean canDouble(Pokemon attacker, Pokemon defender) {
 		return false;
+	}
+	
+	private void drawHpBar(Batch batch, int maxhp, int curhp, int x, int y) {
+		
+		int height = 16;
+		int totalBarLength = 128;
+		float hpPercent = curhp/maxhp;
+		
+		Texture tex;
+		
+		if(hpPercent > 0.5)
+			tex = greenbar;
+		else if(hpPercent > 0.25)
+			tex = yellowbar;
+		else
+			tex = redbar;
+		
+		batch.draw(tex,x,y,totalBarLength*hpPercent, height);
+		
 	}
 	
 	private class PlayerAnimation{

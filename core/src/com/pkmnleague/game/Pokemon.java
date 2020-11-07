@@ -32,6 +32,10 @@ public class Pokemon extends MapObject{
 		FAST
 	}
 	
+	public int totalHP() {
+		return hp;
+	}
+	
 	public int currentHP() {
 		return hp-damage;
 	}
