@@ -6,15 +6,7 @@ public class Tile {
 	public int moveCost;
 	public boolean breakable, grass, water, solid, foreground;
 	public int x, y;
-	
-	// DEPRECATED??
-	public Tile(int moveCost, boolean breakable, boolean grass, boolean water, boolean solid) {
-		this.moveCost = moveCost;
-		this.breakable = breakable;
-		this.grass = grass;
-		this.water = water;
-		this.solid = solid;
-	}
+
 	
 	public Tile(MapProperties props, int x, int y) {
 		this.moveCost = Integer.parseInt((String)props.get("move_cost"));

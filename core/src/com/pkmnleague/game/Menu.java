@@ -119,10 +119,10 @@ public class Menu extends Actor{
 		state = STATE.DEFAULT;
 		
 		level = srcLevel;
-		pokemon = (Pokemon) level.getCursorMapObj();
+		//pokemon = (Pokemon) level.getCursorMapObj();
 		
-		tradeable = level.getAdjacentTradable(true);
-		attackable = level.getAdjacentAttackable(true);
+		//tradeable = level.getAdjacentTradable(true);
+		//attackable = level.getAdjacentAttackable(true);
 		options = new ArrayList<String>();
 		
 		if(attackable.size() > 0)
@@ -171,10 +171,10 @@ public class Menu extends Actor{
 	private void drawAttackSelect(Batch batch, float alpha) {
 		Pokemon curPokemon = attackable.get(selectorIndex);
 		int[] coords = curPokemon.getPosition();
-		int[] camPos = level.getCamPos();
-		float[] viewp = level.getViewPort();
-		int x = 16*(coords[0] - camPos[0] + (int)viewp[0]/32);
-		int y = 16*(coords[1] - camPos[1] + (int)viewp[1]/32);
+		//int[] camPos = level.getCamPos();
+		//float[] viewp = level.getViewPort();
+		//int x = 16*(coords[0] - camPos[0] + (int)viewp[0]/32);
+		//int y = 16*(coords[1] - camPos[1] + (int)viewp[1]/32);
 		
 		batch.end();
 		Matrix4 mat = batch.getTransformMatrix();
@@ -200,10 +200,10 @@ public class Menu extends Actor{
 	private void drawTradeSelect(Batch batch, float alpha) {
 		Pokemon curPokemon = tradeable.get(selectorIndex);
 		int[] coords = curPokemon.getPosition();
-		int[] camPos = level.getCamPos();
-		float[] viewp = level.getViewPort();
-		int x = 16*(coords[0] - camPos[0] + (int)viewp[0]/32);
-		int y = 16*(coords[1] - camPos[1] + (int)viewp[1]/32);
+		//int[] camPos = level.getCamPos();
+		//float[] viewp = level.getViewPort();
+		//int x = 16*(coords[0] - camPos[0] + (int)viewp[0]/32);
+		//int y = 16*(coords[1] - camPos[1] + (int)viewp[1]/32);
 		
 		batch.end();
 		Matrix4 mat = batch.getTransformMatrix();

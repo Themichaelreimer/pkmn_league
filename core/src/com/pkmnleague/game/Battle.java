@@ -126,7 +126,9 @@ public class Battle extends Actor{
 		String enemyLine1 = String.format("%s - Lv. %s", enemyStrs[0],enemyStrs[1]);
 		String enemyLine2 = String.format("HP: %s/%s",enemyStrs[2],enemyStrs[3]); // TODO, replace this with bar( Or both?)
 		String enemyLine3 = "Tackle";
-		
+
+		/*
+
 		float[] viewport = level.getViewPort();
 		float width = viewport[0];
 		float height = viewport[1];
@@ -221,7 +223,7 @@ public class Battle extends Actor{
 		// HP Bars
 		drawHpBar(batch, player.totalHP(), player.currentHP(), playerBoxX + 96, playerBoxY + statusBoxHeight - 44 );
 		drawHpBar(batch, enemy.totalHP(), enemy.currentHP(), enemyBoxX + 110, enemyBoxY + statusBoxHeight - 26);
-		
+		*/
 	}
 	
 	public boolean canDouble(Pokemon attacker, Pokemon defender) {

@@ -17,8 +17,6 @@ public class MapObject extends Actor {
 	
 	public MapObject() {
 		coords = new int[2];
-		coords[0] = 0;
-		coords[1] = 0;
 		screenSpaceCoords = new Vector3();
 	}
 	

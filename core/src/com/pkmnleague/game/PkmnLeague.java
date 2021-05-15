@@ -18,85 +18,75 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
+
 
 public class PkmnLeague extends ApplicationAdapter implements InputProcessor {
 
 	SpriteBatch batch;
 	OrthographicCamera camera;
-	Level level;
+	//Level level;
 	Stage stageFrame;
-	
-	public enum GameState{
-		StartMenu,
-		Story,
-		Map
-	}
-	
-	public enum MapState{
-		PlayerTurn,
-		EnemyTurn,
-		NeutralTurn
-	}
-	
-	public enum TurnState{
-		ContextMenu,
-		PartyView,
-		Battle
-	}
-	// ArrayList of maps
-	// (Master) ArrayList of pokemon
-	// ArrayList of inventory
-	
+	Controller controller;
+	Stack<BaseScreen> screens;
+
+	String[] maps = {
+			"assets/maps/map1-2.tmx",
+			"assets/maps/testmap1.tmx"
+	};
 
 	@Override
 	public void create () {
-		float width = Gdx.graphics.getWidth();
-		float height = Gdx.graphics.getHeight();
-		
-		//Init Camera
-		camera = new OrthographicCamera();
-		camera.setToOrtho(false,width,height);
-		camera.update();
+
 		batch = new SpriteBatch();
 
 		//Load map
-		level = new Level("assets/maps/map1-2.tmx",camera);
-		stageFrame = level.getStage();
+		screens = new Stack<BaseScreen>();
+		screens.push(new LevelScreen(maps[0]));
+		controller = new Controller();
+
+		//stageFrame = level.getStage();
 
 		Dataset pokemondb = Dataset.getDataset();
 		Gdx.input.setInputProcessor(this);
-		System.out.println("Checkpoint");
-		
+
 	}
 
 	@Override
 	public void render () {
+		Set<ControllerValues> inputs = controller.directionHandler();
+
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		camera.update();
 		batch.begin();
-		level.render(batch);
+		if(!screens.isEmpty()) {
+			BaseScreen curScreen = screens.peek();
+			curScreen.handleInput(inputs);
+			curScreen.render(batch);
+		}
 		batch.end();
 		
-		stageFrame = level.getStage();
-		if(stageFrame != null) {
-			stageFrame.draw();
-		}
+		//stageFrame = level.getStage();
+		//if(stageFrame != null) {
+		//	stageFrame.draw();
+		//}
 	}
 	
 	// Deleted a public void dispose()
 	
 	@Override
 	public boolean keyDown(int keycode) {
-		level.keyDown(keycode);
+		Set<ControllerValues> input = controller.keyDown(keycode);
+		screens.peek().handleInput(input);  // Sends input commands to top of stack
 		return false; 
 	}
 	
 	@Override
 	public boolean keyUp(int keycode) {
-		
-		level.keyUp(keycode);
+		controller.keyUp(keycode);
 		return false;
 	}
 	
