@@ -52,7 +52,7 @@ public class Controller {
             right=false;
         }
         if(keycode == Input.Keys.LEFT) {
-            left=false;
+            left = false;
         }
     }
 

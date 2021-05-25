@@ -14,8 +14,8 @@ public class Cursor extends Actor {
 	private Vector3 drawCoords;
 	private MapObject selectedObject1;
 	private MapObject selectedObject2;
-	private Texture texture;
-	private Texture mapArea;
+	private final Texture texture;
+	private final Texture mapArea;
 	private ArrayList<Tile> moveableTiles;
 	
 	public Cursor(int startX, int startY) {

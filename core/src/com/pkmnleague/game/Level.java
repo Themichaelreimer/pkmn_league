@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -78,23 +79,6 @@ public class Level {
 		return this.stage;
 	}
 
-	/*
-	public float[] getViewPort() {
-		float[] res = new float[2];
-		res[0] = camera.viewportWidth;
-		res[1] = camera.viewportHeight;
-		return res;
-				
-	}
-
-	private int[] getDimensionsInTiles() {
-		int[] res = new int[2];
-		res[0] = (int) (camera.viewportWidth / 16);
-		res[1] = (int) (camera.viewportHeight / 16);
-		return res;
-	}
-	*/
-
 	public GridPoint2 getDimensionsInTiles(){
 		return new GridPoint2(this.width, this.height);
 	}
@@ -126,8 +110,7 @@ public class Level {
 		pokemonPreview.top().right();
 		pokemonPreview.setFillParent(true);
 		Texture previewBG = new Texture(Gdx.files.internal("assets/sprites/LoyaltyBattleUI/battleMessage.png"));
-		//pokemonPreview.setBackground(new TextureRegionDrawable(previewBG));
-		
+
 		Table previewContainer = new Table();
 		previewContainer.setBackground(new TextureRegionDrawable(previewBG));
 		
@@ -154,13 +137,13 @@ public class Level {
 			}
 		}
 		
-		makePokemonAtPosition("charmander",2,20,20,playerPokemon);
-		makePokemonAtPosition("pikachu",4,20,21,playerPokemon);
-		makePokemonAtPosition("sandshrew",9,21,21,playerPokemon);
+		makePokemonAtPosition("charmander",2,20,6,playerPokemon);
+		makePokemonAtPosition("pikachu",4,20,7,playerPokemon);
+		makePokemonAtPosition("sandshrew",9,21,8,playerPokemon);
 		
-		makePokemonAtPosition("koffing",5,24,24,enemyPokemon);
-		makePokemonAtPosition("weezing",12,23,23,enemyPokemon);
-		makePokemonAtPosition("rattata",7,23,24,enemyPokemon);
+		makePokemonAtPosition("koffing",5,24,26,enemyPokemon);
+		makePokemonAtPosition("weezing",12,23,27,enemyPokemon);
+		makePokemonAtPosition("rattata",7,24,27,enemyPokemon);
 
 		
 	}
@@ -410,24 +393,17 @@ public class Level {
 		objects[endY][endX] = obj;
 	}
 	
-	public void render(Batch batch) {
+	public void render(Batch batch, OrthographicCamera camera, Cursor cursor) {
 
-		/*
-		moveCameraToTargetPos();
-		//inputHandler();
-
-		if(objects[cursor.Y()][cursor.X()] == null || battle != null) {
+		if(objects[cursor.Y()][cursor.X()] == null) {
 			pokemonPreview.setVisible(false);
 		}else {
+			updateUILabels(cursor);
 			pokemonPreview.setVisible(true);
 		}
-		
-		camera.update();
+
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
-		*/
-		
-		
 		batch.setColor(0.3f, 0.6f, 1.0f, 1.0f);
 		for (Pokemon pokemon : playerPokemon) pokemon.draw(batch, 1);
 		//-------------------------------------------------
@@ -437,9 +413,7 @@ public class Level {
 		for (Pokemon pokemon : enemyPokemon) pokemon.draw(batch, 1);
 		//-------------------------------------------------
 		batch.setColor(Color.WHITE);
-		
-		//Draw enemy team in red
-		//cursor.draw(batch, 0.3f);
+
 
 	}
 
@@ -487,7 +461,6 @@ public class Level {
 				pokemonDescLabel.setText(pkmn.getDescStr());
 			}
 		}
-		
 	}
 	
 

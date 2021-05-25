@@ -17,11 +17,11 @@ public class LevelScreen implements BaseScreen{
     private final Cursor cursor;
 
     private final MapCamera camera;
-    private GridPoint2 cursorLocalPosition;
     private GridPoint2 screenTileDimensions;
     private final GridPoint2 levelTileDimensions;
 
     private final int maxCursCamDist = 7;
+    private ActionMenuScreen menu;
 
     // TODO: Add player party once persistence is added
     public LevelScreen(String path){
@@ -37,18 +37,29 @@ public class LevelScreen implements BaseScreen{
         //Set cursor and location
         int initialX = this.levelTileDimensions.x/2;
         int initialY = this.levelTileDimensions.y/2;
+
         this.cursor = new Cursor(initialX, initialY);
         this.placeCameraInLevel();
+        this.menu = null;
 
+    }
+
+    public void clearMenu(){
+        this.menu = null;
+    }
+
+    public void makeActionMenu(Pokemon p){
+        this.menu = new ActionMenuScreen(this, p);
     }
 
     @Override
     public void render(Batch batch) {
         camera.update();
-        TiledMapRenderer tilemapRenderer = this.level.getRenderer();
-        tilemapRenderer.setView(this.camera.getOrthoCam());
-        tilemapRenderer.render();
+        this.level.render(batch, this.camera.getOrthoCam(), cursor);
         this.cursor.draw(batch, 1.0f);
+        if(this.menu != null){
+            this.menu.render(batch);
+        }
     }
 
     private Level loadMap(String path){
@@ -56,38 +67,25 @@ public class LevelScreen implements BaseScreen{
     }
 
     private void placeCameraInLevel(){
-        int width = this.levelTileDimensions.x;
-        int height = this.levelTileDimensions.y;
+
         int screenWidthTiles = this.camera.getScreenTileDimensions().x;
         int screenHeightTiles = this.camera.getScreenTileDimensions().y;
 
-        //Calculate optimal initial camera placement
-        int camX = cursor.X();
-        if(camX < screenWidthTiles) // 15 < 20
-            camX = screenWidthTiles;
-        else if(camX > width-screenWidthTiles) // 15 > 60-20
-            camX = width-screenWidthTiles;
-
-        int camY = cursor.Y();
-        if(camY < screenHeightTiles)
-            camY = screenHeightTiles;
-        else if(camY > height-screenHeightTiles)
-            camY = height-screenHeightTiles;
+        int camX = screenWidthTiles/2;
+        int camY = screenHeightTiles/2;
 
         //Place camera
         Vector2 targetCameraPos = new Vector2(16f*camX, 16f*camY);
         this.camera.moveCameraToPosition(targetCameraPos);
 
-        int cursLocalX = cursor.X() - camX;
-        int cursLocalY = cursor.Y() - camY;
-
-        cursorLocalPosition = new GridPoint2(cursLocalX, cursLocalY);
-
     }
 
     public void handleInput(Set<ControllerValues> input){
 
-        //System.out.println(input);
+        if (this.menu != null){
+            this.menu.handleInput(input);
+            return;
+        }
 
         if (input.contains(ControllerValues.UP))
             up();
@@ -105,7 +103,7 @@ public class LevelScreen implements BaseScreen{
     }
 
     public void A(){
-
+        this.mapClick();
     }
 
     public void B(){
@@ -113,22 +111,18 @@ public class LevelScreen implements BaseScreen{
     }
 
     public void up() {
-        System.out.println("UP");
         this.mapMove(0,1);
     }
 
     public void down() {
-        System.out.println("DOWN");
         this.mapMove(0,-1);
     }
 
     public void right() {
-        System.out.println("RIGHT");
         this.mapMove(1,0);
     }
 
     public void left() {
-        System.out.println("LEFT");
         this.mapMove(-1,0);
     }
 
@@ -162,7 +156,6 @@ public class LevelScreen implements BaseScreen{
         // "Global" cursor movement on the world map
         // Everything after cursor.move() is just visual
         cursor.move(dx, dy);
-        System.out.printf("distX=%d, distY=%d\n", cursorCamDistanceX, cursorCamDistanceY);
 
         // MOVE RIGHT
         if(dx > 0){
@@ -206,10 +199,12 @@ public class LevelScreen implements BaseScreen{
         MapObject mapObj = level.getObjectAtPosition(pos);
         if(mapObj != null) {
             if (cursor.hasSelectedObject()) {
-                //if(cursor.getSelectedObject() == mapObj) {
-                //    int[] menuCoords = calcMenuCoords();
-                //   menu = new Menu(this,menuCoords[0],menuCoords[1]);
-                //}
+                if(cursor.getSelectedObject() == mapObj) {
+                    Pokemon selPokemon = (Pokemon)cursor.getSelectedObject();
+                    makeActionMenu(selPokemon);
+                    //GridPoint2 menuCoords = calcMenuCoords();
+                    //menu = new Menu(this,menuCoords[0],menuCoords[1]);
+                }
 
             } else {
                 // Set selected object
@@ -233,7 +228,8 @@ public class LevelScreen implements BaseScreen{
 
                     if(cursor.getMoveableTiles().contains(targetTile)) {
 
-                        //int[] menuCoords = calcMenuCoords();
+                        makeActionMenu(mapPkmn);
+                        //GridPoint2 menuCoords = calcMenuCoords();
                         //menu = new Menu(this,menuCoords[0],menuCoords[1]);
 
                     }else {
@@ -252,5 +248,17 @@ public class LevelScreen implements BaseScreen{
 
     public MapObject getCursorMapObj() {
         return cursor.getSelectedObject();
+    }
+
+    /*
+     * Finalizes a move request of the selected pokemon to the
+     * cursor's present position
+     */
+    public void commitMovePokemon(){
+        Pokemon p = (Pokemon) cursor.getSelectedObject();
+        int[] start = p.getPosition();
+        int[] end = cursor.getPos();
+        this.level.moveMapObj(p,start[0], start[1], end[0], end[1]);
+        cursor.clearSelectedObject();
     }
 }

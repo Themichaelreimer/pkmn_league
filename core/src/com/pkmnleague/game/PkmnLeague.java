@@ -31,6 +31,7 @@ public class PkmnLeague extends ApplicationAdapter implements InputProcessor {
 	Stage stageFrame;
 	Controller controller;
 	Stack<BaseScreen> screens;
+	Dataset pokemonDB;
 
 	String[] maps = {
 			"assets/maps/map1-2.tmx",
@@ -44,12 +45,12 @@ public class PkmnLeague extends ApplicationAdapter implements InputProcessor {
 
 		//Load map
 		screens = new Stack<BaseScreen>();
-		screens.push(new LevelScreen(maps[0]));
+		screens.push(new LevelScreen(maps[1]));
 		controller = new Controller();
 
 		//stageFrame = level.getStage();
 
-		Dataset pokemondb = Dataset.getDataset();
+		pokemonDB = Dataset.getDataset();
 		Gdx.input.setInputProcessor(this);
 
 	}
@@ -58,7 +59,7 @@ public class PkmnLeague extends ApplicationAdapter implements InputProcessor {
 	public void render () {
 		Set<ControllerValues> inputs = controller.directionHandler();
 
-		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
