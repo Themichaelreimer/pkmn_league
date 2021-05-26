@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.utils.OrderedSet;
 
 public class Cursor extends Actor {
 	
@@ -16,7 +17,9 @@ public class Cursor extends Actor {
 	private MapObject selectedObject2;
 	private final Texture texture;
 	private final Texture mapArea;
+
 	private ArrayList<Tile> moveableTiles;
+	private OrderedSet<Tile> attackableTiles;
 	
 	public Cursor(int startX, int startY) {
 		 selectedObject1 = null;
@@ -27,6 +30,7 @@ public class Cursor extends Actor {
 		 texture = new Texture("assets/sprites/cursor.png");
 		 mapArea = new Texture("assets/sprites/area.png");
 		 moveableTiles = null;
+		 attackableTiles = null;
 	}
 	
 	public void setPos(int x, int y) {
@@ -40,6 +44,8 @@ public class Cursor extends Actor {
 			selectedObject1 = null;
 		if(moveableTiles != null)
 			moveableTiles = null;
+		if(attackableTiles != null)
+			attackableTiles = null;
 	}
 	
 	public void move(int dx, int dy) {
@@ -70,23 +76,28 @@ public class Cursor extends Actor {
 		return selectedObject1;
 	}
 	
-	public void setSelectedObject(MapObject obj, ArrayList<Tile> tiles) {
+	public void setSelectedObject(MapObject obj, ArrayList<Tile> tiles, OrderedSet<Tile> attackable) {
 		selectedObject1 = obj;
 		moveableTiles = tiles;
+		attackableTiles = attackable;
 		selectedObject1.select(this);
+		System.out.printf("#attackable tiles = %d\n ",attackable.size);
 	}
 	
 	public void clearSelectedObject() {
 		selectedObject1.deselect();
 		selectedObject1 = null;
 		moveableTiles = null;
+		attackableTiles = null;
 		
 	}
 	
 	public ArrayList<Tile> getMoveableTiles(){
 		return moveableTiles;
 	}
-	
+
+	public OrderedSet<Tile> getAttackableTiles() { return attackableTiles; }
+
 	protected float[] getTargetCamPos() {
 		float[] pos = new float[2];
 		pos[0] = 16f*pos_x;
@@ -124,6 +135,14 @@ public class Cursor extends Actor {
 			for(int i=0; i<this.moveableTiles.size();i++) {
 				Tile tile = moveableTiles.get(i);
 				batch.draw(mapArea,16f*tile.x,16f*tile.y,16f,16f);
+			}
+		}
+		batch.setColor(1f,0.2f,0.2f, 0.5f);
+		if (attackableTiles != null && moveableTiles != null){
+			for(Tile t : attackableTiles){
+				if (!moveableTiles.contains(t)){
+					batch.draw(mapArea,16f*t.x,16f*t.y,16f,16f);
+				}
 			}
 		}
 		batch.setColor(Color.WHITE);

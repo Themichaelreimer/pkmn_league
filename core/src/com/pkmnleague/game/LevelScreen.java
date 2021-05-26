@@ -7,6 +7,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.OrderedSet;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -212,7 +213,14 @@ public class LevelScreen implements BaseScreen{
                 //Only a pokemon can be a slot 1 selected object
                 if(mapObj instanceof Pokemon) {
                     Pokemon mapPkmn = (Pokemon)mapObj;
-                    cursor.setSelectedObject(mapPkmn, level.getMoveableTiles(x,y,mapPkmn));
+                    ArrayList<Tile> movable = level.getMoveableTiles(x,y,mapPkmn);
+                    OrderedSet<Tile> movableSet = new OrderedSet<Tile>();
+                    for(Tile t:movable){
+                        movableSet.add(t);
+                    }
+                    cursor.setSelectedObject(mapPkmn,
+                            movable,
+                            level.getAttackableTiles(movableSet,2));
                 }
             }
 

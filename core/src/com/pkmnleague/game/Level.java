@@ -294,94 +294,6 @@ public class Level {
 
 		return result;
 	}
-	
-	//TODO: Make pokemon the param and not pokemon move. So I can get types, AND move
-	public ArrayList<Tile> getMoveableTiles(int x, int y, Pokemon pokemon){
-		ArrayList<Tile> list = new ArrayList<Tile>();
-		Queue<MapSearchStruct> tilesWithMove = new LinkedList<>();
-		int pokemonMove = pokemon.getMove();
-		tilesWithMove.add(new MapSearchStruct(mapData[y][x],pokemonMove));
-		
-		boolean canMoveOnWater = pokemon.hasType("water") || pokemon.hasType("flying");
-
-		while(tilesWithMove.size() >0) {
-			
-			//TODO: On adding a tile to the queue, check if it already exists, with a better or equal move score
-			
-			//Move the current tile into the accept list ENFORCING UNIQUENESS
-			MapSearchStruct tileStruct = tilesWithMove.remove();
-			if(!list.contains(tileStruct.tile)) {
-				list.add(tileStruct.tile);	
-			}
-
-			// Properties of the tile "we're already on"
-			int tileX = tileStruct.tile.x;
-			int tileY = tileStruct.tile.y;
-			int remMove = tileStruct.moveRem;
-			int remMoveAfter = 0;
-			
-			if(remMove == 0) {
-				continue;
-			}
-			
-			
-			if( pointInMap(tileX-1,tileY)) {
-				//If we have non-negative move, put this tile into queue.
-				Tile targetTile = mapData[tileY][tileX-1];
-				
-				if(targetTile.water && !canMoveOnWater)
-					remMoveAfter = -1;
-				else
-					remMoveAfter = remMove - targetTile.moveCost;
-				
-				if(remMoveAfter >= 0 && !targetTile.solid) {
-					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
-				}
-			}
-			if( pointInMap(tileX+1,tileY)) {
-				//If we have non-negative move, put this tile into queue.
-				Tile targetTile = mapData[tileY][tileX+1];
-				
-				if(targetTile.water && !canMoveOnWater)
-					remMoveAfter = -1;
-				else
-					remMoveAfter = remMove - targetTile.moveCost;
-				
-				if(remMoveAfter >= 0 && !targetTile.solid) {
-					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
-				}
-			}
-			if( pointInMap(tileX,tileY-1)) {
-				//If we have non-negative move, put this tile into queue.
-				Tile targetTile = mapData[tileY-1][tileX];
-				
-				if(targetTile.water && !canMoveOnWater)
-					remMoveAfter = -1;
-				else
-					remMoveAfter = remMove - targetTile.moveCost;
-				
-				if(remMoveAfter >= 0 && !targetTile.solid) {
-					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
-				}
-			}
-			if( pointInMap(tileX,tileY+1)) {
-				//If we have non-negative move, put this tile into queue.
-				Tile targetTile = mapData[tileY+1][tileX];
-				
-				if(targetTile.water && !canMoveOnWater)
-					remMoveAfter = -1;
-				else
-					remMoveAfter = remMove - targetTile.moveCost;
-				
-				if(remMoveAfter >= 0 && !targetTile.solid) {
-					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
-				}
-			}
-		}
-		
-		return list;
-	}
-
 
 	public boolean pointInMap(int x, int y) {
 		return -1<x && x<width && -1<y && y<height;
@@ -462,14 +374,140 @@ public class Level {
 			}
 		}
 	}
-	
+
+	public OrderedSet<Tile> getAttackableTiles(OrderedSet<Tile> tiles, int distance){
+		OrderedSet<Tile> result = new OrderedSet<>();
+
+		for(Tile tile: tiles){
+			OrderedSet<Tile> tileAttackable = getAttackableTilesFromSpace(tile.x,tile.y,distance);
+			result.addAll(tileAttackable);
+		}
+
+		return result;
+	}
+
+	public OrderedSet<Tile> getAttackableTilesFromSpace(int x, int y, int distance){
+		OrderedSet<Tile> result = new OrderedSet<Tile>();
+
+		Tile thisTile = mapData[y][x];
+
+		result.add(thisTile);
+
+		if(distance == 0)
+			return result;
+
+		if(checkTileExistsAndPassable(x+1,y)){
+				result.addAll(getAttackableTilesFromSpace(x+1,y,distance-1));
+		}
+		if(checkTileExistsAndPassable(x-1,y)){
+			result.addAll(getAttackableTilesFromSpace(x-1,y,distance-1));
+		}
+		if(checkTileExistsAndPassable(x,y+1)){
+			result.addAll(getAttackableTilesFromSpace(x,y+1,distance-1));
+		}
+		if(checkTileExistsAndPassable(x,y-1)){
+			result.addAll(getAttackableTilesFromSpace(x,y-1,distance-1));
+		}
+
+		return result;
+	}
+
+	private boolean checkTileExistsAndPassable(int x, int y){
+		return pointInMap(x,y) && !mapData[y][x].superSolid;
+	}
+
+	//TODO: Make pokemon the param and not pokemon move. So I can get types, AND move
+	public ArrayList<Tile> getMoveableTiles(int x, int y, Pokemon pokemon){
+		ArrayList<Tile> list = new ArrayList<Tile>();
+		Queue<MapSearchStruct> tilesWithMove = new LinkedList<>();
+		int pokemonMove = pokemon.getMove();
+		tilesWithMove.add(new MapSearchStruct(mapData[y][x],pokemonMove));
+
+		boolean canMoveOnWater = pokemon.hasType("water") || pokemon.hasType("flying");
+
+		while(tilesWithMove.size() >0) {
+
+			//TODO: On adding a tile to the queue, check if it already exists, with a better or equal move score
+
+			//Move the current tile into the accept list ENFORCING UNIQUENESS
+			MapSearchStruct tileStruct = tilesWithMove.remove();
+			if(!list.contains(tileStruct.tile)) {
+				list.add(tileStruct.tile);
+			}
+
+			// Properties of the tile "we're already on"
+			int tileX = tileStruct.tile.x;
+			int tileY = tileStruct.tile.y;
+			int remMove = tileStruct.moveRem;
+			int remMoveAfter = 0;
+
+			if(remMove == 0) {
+				continue;
+			}
+
+
+			if( pointInMap(tileX-1,tileY)) {
+				//If we have non-negative move, put this tile into queue.
+				Tile targetTile = mapData[tileY][tileX-1];
+
+				if(targetTile.water && !canMoveOnWater)
+					remMoveAfter = -1;
+				else
+					remMoveAfter = remMove - targetTile.moveCost;
+
+				if(remMoveAfter >= 0 && !targetTile.solid) {
+					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
+				}
+			}
+			if( pointInMap(tileX+1,tileY)) {
+				//If we have non-negative move, put this tile into queue.
+				Tile targetTile = mapData[tileY][tileX+1];
+
+				if(targetTile.water && !canMoveOnWater)
+					remMoveAfter = -1;
+				else
+					remMoveAfter = remMove - targetTile.moveCost;
+
+				if(remMoveAfter >= 0 && !targetTile.solid) {
+					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
+				}
+			}
+			if( pointInMap(tileX,tileY-1)) {
+				//If we have non-negative move, put this tile into queue.
+				Tile targetTile = mapData[tileY-1][tileX];
+
+				if(targetTile.water && !canMoveOnWater)
+					remMoveAfter = -1;
+				else
+					remMoveAfter = remMove - targetTile.moveCost;
+
+				if(remMoveAfter >= 0 && !targetTile.solid) {
+					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
+				}
+			}
+			if( pointInMap(tileX,tileY+1)) {
+				//If we have non-negative move, put this tile into queue.
+				Tile targetTile = mapData[tileY+1][tileX];
+
+				if(targetTile.water && !canMoveOnWater)
+					remMoveAfter = -1;
+				else
+					remMoveAfter = remMove - targetTile.moveCost;
+
+				if(remMoveAfter >= 0 && !targetTile.solid) {
+					tilesWithMove.add(new MapSearchStruct(targetTile,remMoveAfter));
+				}
+			}
+		}
+
+		return list;
+	}
+
 
 	/**
 	 * Returns the camera position in tiles
 	 * @return Camera Position in Tiles
 	 */
-
-
 	private static class MapSearchStruct{
 		public Tile tile;
 		public int moveRem;
