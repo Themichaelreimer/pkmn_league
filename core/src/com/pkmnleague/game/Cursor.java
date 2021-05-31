@@ -123,12 +123,26 @@ public class Cursor extends Actor {
 		}
 
 	}
-	
-	@Override
-	public void draw(Batch batch, float alpha) {
+
+	/**
+	 * Draws the cursor and meta tiles (attackable and movable tiles)
+	 *
+	 * @param batch - Sprite Batch
+	 * @param alpha - Alpha blending constant
+	 * @param drawMetaTiles - Whether to draw the meta tiles. True iff
+	 * we're selecting a space to move to. If we tentatively select a space
+	 * then this should be false.
+	 */
+	public void draw(Batch batch, float alpha, boolean drawMetaTiles) {
 
 		moveToTargetPos();
 		batch.draw(texture, drawCoords.x, drawCoords.y, 16f,16f);
+
+		//Rest of function only draws the meta tiles
+		if(!drawMetaTiles){
+			return;
+		}
+
 		//batch.setColor(pre.r, pre.g, pre.b, 1f);
 		batch.setColor(0f, 0.3f, 1f, 0.5f);
 		if(this.moveableTiles != null){

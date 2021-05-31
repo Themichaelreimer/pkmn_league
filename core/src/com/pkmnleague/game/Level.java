@@ -216,7 +216,8 @@ public class Level {
 	public void makeBattle(Pokemon attacker, Pokemon defender, boolean playerInit) {
 		battle = new Battle(this,attacker,defender, playerInit);
 	}
-	
+
+	// FIXME: Delete this if not needed in redesign, which I suspect
 	public int[] calcMenuCoords() {
 		// Add offsets to make them draw in the desired place
 		int x = cursLocalX;
@@ -252,6 +253,13 @@ public class Level {
 		return this.getObjectAtPosition(position.x, position.y);
 	}
 
+	/**
+	 * "safely" gets an object at (x,y) if it exists, without having to be
+	 * worried about accessing an array out of index
+	 * @param x - x coordinate on tile map
+	 * @param y - y coordinate on tile map
+	 * @return Object on tile (x,y) if it exists, otherwise null
+	 */
 	public MapObject getObjectAtPosition(int x, int y){
 		if (0 <= x && x <this.width && 0<= y && y < this.height){
 			return this.objects[y][x];
@@ -262,12 +270,11 @@ public class Level {
 	public Tile getTileAtPosition(GridPoint2 position){
 		return mapData[position.y][position.x];
 	}
-	
-
 
 	/* Returns a list of all mapobjects with a Manhatten distance in [1,distance]
 	 * from point
 	 */
+	//TODO: Is this necessary, or do we add a flag to getAttackableTiles to ignore terrain?
 	public ArrayList<MapObject> getAdjacentObjects(GridPoint2 point, int distance){
 
 		if(distance == 0){
@@ -298,7 +305,18 @@ public class Level {
 	public boolean pointInMap(int x, int y) {
 		return -1<x && x<width && -1<y && y<height;
 	}
-	
+
+	/**
+	 * Moves a game object from (startX,startY) -> (endX, endY).
+	 * Updates object's internal location data, and updates the object layer
+	 * on map
+	 *
+	 * @param obj - object being moved
+	 * @param startX - initial x
+	 * @param startY - inital y
+	 * @param endX - final x
+	 * @param endY - final y
+	 */
 	public void moveMapObj(MapObject obj, int startX, int startY, int endX, int endY) {
 		obj.setPos(endX, endY);
 		objects[startY][startX] = null;
@@ -329,36 +347,7 @@ public class Level {
 
 	}
 
-	/*
-	public void moveToNextFreePokemon() {
-		MapObject obj = getCursorHoverObject();
-		boolean getNext=false;
-		// Search for first unmoved pokemon
-		if(obj != null && playerPokemon.contains(obj)) {
-			int iPokemon = playerPokemon.indexOf(obj);
-			iPokemon = (iPokemon+1)%playerPokemon.size();
-			Pokemon pokemon = playerPokemon.get(iPokemon);
-			while(pokemon.hasMoved()) {
-				iPokemon = (iPokemon+1)%playerPokemon.size();
-				pokemon = playerPokemon.get(iPokemon);
-			}
-			//Move cursor
-			int[] coords = pokemon.coords;
-			cursor.setPos(coords[0], coords[1]);
-			
-		}else{
-			for (Pokemon pokemon : playerPokemon) {
-				if (!pokemon.hasMoved()) {
-					//Move cursor
-					int[] coords = pokemon.coords;
-					cursor.setPos(coords[0], coords[1]);
-				}
-			}
-		}
-	}
-	*/
-
-	
+	// FIXME - not implemented in redesign yet
 	public void updateUILabels(Cursor cursor) {
 		int[] pos = cursor.getPos();
 		MapObject obj = objects[pos[1]][pos[0]];
@@ -375,6 +364,14 @@ public class Level {
 		}
 	}
 
+	/**
+	 * Given a set of tiles (which represents the tiles a pokemon can move to)
+	 * Returns all tiles that can be attacked at a distance of 'distance'
+	 *
+	 * @param tiles: Set of moveable tiles
+	 * @param distance: Maximum attackable distance
+	 * @return set of tiles that can be attacked by a pokemon
+	 */
 	public OrderedSet<Tile> getAttackableTiles(OrderedSet<Tile> tiles, int distance){
 		OrderedSet<Tile> result = new OrderedSet<>();
 
@@ -386,6 +383,16 @@ public class Level {
 		return result;
 	}
 
+	/**
+	 * Given a tile-space coordinate (x,y) representing the destination
+	 * tile after moving, and a distance d, this function returns the set
+	 * of tiles that are attackable from (x,y)
+	 *
+	 * @param x x coordinate on tile map
+	 * @param y y coordinate on tile map
+	 * @param distance attacking distance
+	 * @return set of tiles that can be attacked on (x,y)
+	 */
 	public OrderedSet<Tile> getAttackableTilesFromSpace(int x, int y, int distance){
 		OrderedSet<Tile> result = new OrderedSet<Tile>();
 
@@ -397,7 +404,7 @@ public class Level {
 			return result;
 
 		if(checkTileExistsAndPassable(x+1,y)){
-				result.addAll(getAttackableTilesFromSpace(x+1,y,distance-1));
+			result.addAll(getAttackableTilesFromSpace(x+1,y,distance-1));
 		}
 		if(checkTileExistsAndPassable(x-1,y)){
 			result.addAll(getAttackableTilesFromSpace(x-1,y,distance-1));
@@ -412,10 +419,43 @@ public class Level {
 		return result;
 	}
 
+	/**
+	 * Given a set of tiles, returns all map objects in that tile set.
+	 * Can be futher narrowed down by checking subclasses and properties
+	 * to get pokemon to attack, to trade with, or items to pick up
+	 *
+	 * @param tiles - input tileset to check for objects in
+	 * @return set of map objects inside tiles
+	 */
+	public OrderedSet<MapObject> getObjectsInTileSet(OrderedSet<Tile> tiles){
+		OrderedSet<MapObject> results = new OrderedSet<>();
+		for(Tile tile: tiles){
+			MapObject obj = this.objects[tile.y][tile.x];
+			if(obj != null)
+				results.add(obj);
+		}
+		return results;
+	}
+
+	/**
+	 * Returns whether it is possible *for all* pokemon to pass onto a space
+	 * in theory. This is false iff the point is outside the map, or the tile
+	 * is marked as completely unpassible in all situations (superSolid)
+	 * @param x x coordinate of tile
+	 * @param y y coordinate of tile
+	 * @return boolean indicating whether to even consider this as a tile
+	 */
 	private boolean checkTileExistsAndPassable(int x, int y){
 		return pointInMap(x,y) && !mapData[y][x].superSolid;
 	}
 
+	/**
+	 *
+	 * @param x x coordinate of pokemon in tiles
+	 * @param y y coordinate of pokemon in tiles
+	 * @param pokemon pokemon that may move
+	 * @return List of tiles. TODO: Make this an ordered set for consistency?
+	 */
 	//TODO: Make pokemon the param and not pokemon move. So I can get types, AND move
 	public ArrayList<Tile> getMoveableTiles(int x, int y, Pokemon pokemon){
 		ArrayList<Tile> list = new ArrayList<Tile>();

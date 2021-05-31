@@ -57,7 +57,7 @@ public class LevelScreen implements BaseScreen{
     public void render(Batch batch) {
         camera.update();
         this.level.render(batch, this.camera.getOrthoCam(), cursor);
-        this.cursor.draw(batch, 1.0f);
+        this.cursor.draw(batch, 1.0f, this.menu == null);
         if(this.menu != null){
             this.menu.render(batch);
         }
@@ -65,6 +65,10 @@ public class LevelScreen implements BaseScreen{
 
     private Level loadMap(String path){
         return new Level(path);
+    }
+
+    public Level getLevel(){
+        return this.level;
     }
 
     private void placeCameraInLevel(){
@@ -256,6 +260,10 @@ public class LevelScreen implements BaseScreen{
 
     public MapObject getCursorMapObj() {
         return cursor.getSelectedObject();
+    }
+
+    public int[] getCursorPosition(){
+        return this.cursor.getPos();
     }
 
     /*
